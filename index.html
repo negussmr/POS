@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#14243a">
+<title>RoboLearn POS</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<style>
+:root{--navy:#14243a;--navy2:#20344e;--blue:#416b9b;--paper:#f5f4f0;--white:#fff;--muted:#929ba7;--line:#e7e7e2;--green:#39765d;--red:#a75252}
+*{box-sizing:border-box;margin:0;padding:0;font-family:Inter,"Segoe UI",Arial,sans-serif}
+body{background:var(--paper);color:var(--navy)}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.app{display:flex;min-height:100vh}
+.sidebar{width:230px;background:var(--navy);color:#fff;padding:28px 17px;display:flex;flex-direction:column;flex-shrink:0}
+.brand{padding:0 10px;font-size:20px;font-weight:800;letter-spacing:1.7px}
+.brand-sub{font-size:9px;color:#a2b0c2;letter-spacing:2px;margin-top:6px}
+.nav-label{font-size:9px;letter-spacing:2px;color:#77889e;margin:38px 10px 12px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:13px 12px;border-radius:6px;color:#bdc7d3;font-size:12px;cursor:pointer;margin-bottom:4px}
+.nav-item:hover,.nav-item.active{background:#2b405c;color:#fff}
+.nav-icon{width:18px;text-align:center;font-size:15px}
+.sidebar-footer{margin-top:auto;padding:15px 10px;color:#8493a7;font-size:10px;line-height:1.9}
+.main{flex:1;min-width:0;padding:30px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:27px}
+.page-title{font-size:25px;font-weight:750}
+.page-subtitle{color:var(--muted);font-size:12px;margin-top:6px}
+.status{background:#e6efe8;color:var(--green);padding:9px 12px;border-radius:5px;font-size:10px;font-weight:750;white-space:nowrap}
+.demo-banner{padding:12px 15px;background:#e9edf3;border:1px solid #d8e0e9;border-radius:7px;margin-bottom:24px;font-size:11px;color:#42536b}
+.workspace{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:22px;align-items:start}
+.section-title{font-size:15px;font-weight:750;margin-bottom:16px}
+.section-subtitle{color:var(--muted);font-size:11px;margin-top:-10px;margin-bottom:17px}
+.products{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.product{background:#fff;border:1px solid var(--line);border-radius:8px;padding:15px;transition:.2s}
+.product:hover{transform:translateY(-2px);border-color:#b9c7d7}
+.product-art{height:100px;display:grid;place-items:center;background:#f0f2f5;border-radius:5px;margin-bottom:14px}
+.product-art svg{width:54px;height:54px;stroke:#51657d;fill:none;stroke-width:1.4}
+.product-category{font-size:9px;color:var(--muted);letter-spacing:1px;margin-bottom:6px}
+.product-name{font-size:13px;font-weight:700;margin-bottom:5px}
+.product-description{font-size:10px;color:var(--muted);line-height:1.5}
+.product-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:16px;gap:5px}
+.product-price{font-size:13px;font-weight:800}
+.primary-btn{background:var(--navy);color:#fff;border:0;padding:9px 12px;border-radius:5px;font-size:10px;font-weight:700}
+.primary-btn:hover{background:var(--blue)}
+.primary-btn:disabled{background:#c4ccd6;cursor:not-allowed}
+.cart{background:#fff;border:1px solid var(--line);border-radius:8px;padding:20px}
+.cart-heading{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:16px}
+.cart-heading strong{font-size:14px}
+.muted{color:var(--muted);font-size:10px}
+.cart-items{min-height:120px}
+.empty{text-align:center;padding:40px 8px;color:var(--muted);font-size:11px}
+.cart-item{display:flex;justify-content:space-between;gap:10px;padding:13px 0;border-bottom:1px solid var(--line)}
+.cart-item strong{font-size:11px}
+.cart-item small{display:block;color:var(--muted);margin-top:5px;font-size:10px}
+.cart-item-right{text-align:right;white-space:nowrap;font-size:11px;font-weight:700}
+.remove-btn{display:block;margin-top:5px;border:0;background:none;color:var(--red);font-size:9px}
+.cart-summary{border-top:1px solid var(--line);padding-top:16px;margin-top:12px}
+.summary-row{display:flex;justify-content:space-between;margin-bottom:12px;font-size:11px}
+.total-row{font-size:19px;font-weight:800;border-top:1px solid var(--line);padding-top:15px;margin-top:16px}
+.full-btn{width:100%;border:0;background:var(--blue);color:#fff;padding:14px;border-radius:5px;font-size:11px;font-weight:750;margin-top:12px}
+.full-btn:hover{background:var(--navy)}
+.page{display:none}
+.page.active{display:block}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.search{padding:11px 13px;border:1px solid var(--line);background:#fff;border-radius:5px;outline:none;width:min(100%,280px);font-size:12px}
+.search:focus,.field input:focus,.field select:focus{border-color:var(--blue)}
+.receipt-list{display:grid;gap:10px}
+.receipt-card{background:#fff;border:1px solid var(--line);border-radius:7px;padding:16px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.receipt-card strong{font-size:12px}
+.receipt-card p{font-size:10px;color:var(--muted);margin-top:5px}
+.card-actions{display:flex;gap:7px;flex-wrap:wrap}
+.secondary-btn{background:#fff;border:1px solid var(--line);padding:9px 11px;border-radius:5px;font-size:10px;color:var(--navy)}
+.secondary-btn:hover{background:var(--paper)}
+.settings-card{background:#fff;border:1px solid var(--line);padding:20px;border-radius:8px;margin-bottom:15px}
+.settings-card h3{font-size:14px;margin-bottom:9px}
+.settings-card p{color:var(--muted);font-size:11px;line-height:1.7}
+.modal-backdrop{position:fixed;inset:0;background:rgba(9,20,34,.66);display:none;align-items:center;justify-content:center;padding:15px;z-index:10;overflow-y:auto}
+.modal-backdrop.open{display:flex}
+.modal{width:100%;max-width:510px;max-height:95vh;overflow-y:auto;background:#fff;border-radius:9px;padding:24px}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.modal-header h2{font-size:19px}
+.close-btn{border:0;background:none;font-size:22px;color:var(--muted)}
+.field{margin-bottom:15px}
+.field label{display:block;font-size:10px;font-weight:700;margin-bottom:7px}
+.field input,.field select{width:100%;padding:12px;border:1px solid var(--line);border-radius:5px;outline:none;background:#fff;font-size:12px}
+.checkout-summary{background:var(--paper);padding:15px;border-radius:6px;margin-bottom:17px}
+.checkout-summary div{display:flex;justify-content:space-between;font-size:11px;margin-bottom:9px}
+.checkout-summary div:last-child{font-size:17px;font-weight:800;margin:0;padding-top:10px;border-top:1px solid var(--line)}
+.change-display{background:#e9f1eb;color:var(--green);padding:13px;border-radius:5px;font-size:12px;margin-bottom:15px}
+.receipt-paper{background:#fff;color:#182333;width:100%;max-width:340px;margin:0 auto;padding:20px;font-family:monospace;box-shadow:0 3px 18px #00000010}
+.receipt-paper *{font-family:monospace}
+.receipt-center{text-align:center}
+.receipt-brand{font-size:21px;font-weight:900;letter-spacing:1px}
+.receipt-small{font-size:10px;line-height:1.7}
+.receipt-rule{border-top:1px dashed #777;margin:12px 0}
+.receipt-line{display:flex;justify-content:space-between;gap:8px;font-size:10px;margin:7px 0}
+.receipt-total{font-size:14px;font-weight:900}
+.receipt-warning{border:1px solid #a77b38;color:#8c6020;font-size:9px;font-weight:bold;padding:7px;text-align:center;margin:12px 0}
+.qr-holder{display:flex;justify-content:center;padding:12px 0;min-height:145px;align-items:center}
+.qr-holder img,.qr-holder canvas{max-width:150px;max-height:150px}
+.qr-error{font-size:10px;color:var(--red);text-align:center;padding:20px}
+.modal-actions{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}
+.modal-actions button{flex:1;min-width:110px}
+.scanner-video{width:100%;border-radius:7px;background:#101b2d;max-height:300px;object-fit:cover}
+.notice{color:var(--muted);font-size:11px;line-height:1.6;margin:12px 0}
+@media(max-width:900px){.sidebar{width:190px}.workspace{grid-template-columns:1fr}}
+@media(max-width:550px){.sidebar{display:none}.main{padding:18px 13px}.page-title{font-size:21px}.products{gap:9px}.product{padding:11px}.product-art{height:80px}.product-name{font-size:11px}.product-price{font-size:11px}.product-bottom{align-items:flex-start;flex-direction:column}.add-btn{width:100%}.receipt-card{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+<aside class="sidebar">
+  <div class="brand">ROBOLEARN<div class="brand-sub">ROBOTICS SOLUTIONS</div></div>
+  <div class="nav-label">WORKSPACE</div>
+  <div class="nav-item active" data-page="pos"><span class="nav-icon">▦</span> Point of Sale</div>
+  <div class="nav-item" data-page="inventory"><span class="nav-icon">▤</span> Inventory</div>
+  <div class="nav-item" data-page="transactions"><span class="nav-icon">◷</span> Transactions</div>
+  <div class="nav-item" data-page="receipts"><span class="nav-icon">▧</span> Receipts</div>
+  <div class="nav-label">SYSTEM</div>
+  <div class="nav-item" data-page="settings"><span class="nav-icon">⚙</span> Settings</div>
+  <div class="sidebar-footer">ROBOLEARN POS<br>VERSION 1.0.4<br>LOCAL DEMONSTRATION</div>
+</aside>
+
+<main class="main">
+<header class="topbar">
+  <div>
+    <h1 class="page-title" id="pageTitle">Point of Sale</h1>
+    <p class="page-subtitle" id="pageSubtitle">Manage simulated sales and transactions.</p>
+  </div>
+  <div class="status">SIMULATION MODE</div>
+</header>
+
+<div class="demo-banner">
+  DEMONSTRATION ENVIRONMENT — All orders, payments and receipts are simulated. No real payments are processed.
+</div>
+
+<section class="page active" id="page-pos">
+  <div class="workspace">
+    <section>
+      <h2 class="section-title">Product Catalog</h2>
+      <p class="section-subtitle">Select products to add to the order.</p>
+      <div class="products" id="products"></div>
+    </section>
+    <aside class="cart">
+      <div class="cart-heading">
+        <strong>Current Order</strong>
+        <span class="muted" id="itemCount">0 ITEMS</span>
+      </div>
+      <div class="cart-items" id="cartItems">
+        <div class="empty">No items have been added.</div>
+      </div>
+      <div class="cart-summary">
+        <div class="summary-row"><span>Subtotal</span><span id="subtotal">₱0.00</span></div>
+        <div class="summary-row"><span>Discount</span><span>₱0.00</span></div>
+        <div class="summary-row total-row"><span>Total</span><span id="total">₱0.00</span></div>
+        <button class="full-btn" onclick="openCheckout()">PROCEED TO CHECKOUT</button>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<section class="page" id="page-inventory">
+  <div class="toolbar">
+    <h2 class="section-title">Product Inventory</h2>
+    <input class="search" id="inventorySearch" placeholder="Search products..." oninput="renderInventory()">
+  </div>
+  <div id="inventoryList" class="receipt-list"></div>
+</section>
+
+<section class="page" id="page-transactions">
+  <div class="toolbar">
+    <h2 class="section-title">Transaction History</h2>
+    <span class="muted" id="transactionCount">0 RECORDS</span>
+  </div>
+  <div id="transactionList" class="receipt-list"></div>
+</section>
+
+<section class="page" id="page-receipts">
+  <div class="toolbar">
+    <h2 class="section-title">Receipt Archive</h2>
+    <button class="primary-btn" onclick="openScanner()">SCAN QR RECEIPT</button>
+  </div>
+  <div class="toolbar">
+    <input class="search" id="receiptSearch" placeholder="Search receipt number..." oninput="renderReceipts()">
+    <span class="muted" id="receiptCount">0 RECEIPTS</span>
+  </div>
+  <div id="receiptList" class="receipt-list"></div>
+</section>
+
+<section class="page" id="page-settings">
+  <div class="settings-card">
+    <h3>System Configuration</h3>
+    <p>RoboLearn POS is running in local simulation mode. No external payment gateway or server is connected.</p>
+  </div>
+  <div class="settings-card">
+    <h3>Data Storage</h3>
+    <p>Products and simulated transactions are saved in this browser's local storage.</p>
+  </div>
+  <div class="settings-card">
+    <h3>Receipt System</h3>
+    <p>Receipts contain encoded transaction information. QR reconstruction works without a website or external database.</p>
+  </div>
+  <div class="settings-card">
+    <h3>Data Management</h3>
+    <button class="secondary-btn" onclick="exportBackup()">EXPORT BACKUP</button>
+    <button class="secondary-btn" onclick="clearDemoData()">RESET DEMO DATA</button>
+  </div>
+</section>
+</main>
+</div>
+
+<div class="modal-backdrop" id="checkoutModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Mock Checkout</h2>
+      <button class="close-btn" onclick="closeModal('checkoutModal')">×</button>
+    </div>
+    <div class="checkout-summary" id="checkoutSummary"></div>
+    <div class="field">
+      <label>Customer Name</label>
+      <input id="customerName" placeholder="Walk-in Customer">
+    </div>
+    <div class="field">
+      <label>Payment Method</label>
+      <select id="paymentMethod" onchange="updatePaymentFields()">
+        <option value="Cash">Cash</option>
+        <option value="GCash (Mock)">GCash (Mock)</option>
+        <option value="Card (Mock)">Card (Mock)</option>
+        <option value="Bank Transfer (Mock)">Bank Transfer (Mock)</option>
+      </select>
+    </div>
+    <div class="field" id="cashField">
+      <label>Cash Received (PHP)</label>
+      <input type="number" id="cashReceived" placeholder="Enter amount" min="0" step="0.01" oninput="updateChange()">
+    </div>
+    <div class="change-display" id="changeDisplay">Change: ₱0.00</div>
+    <p class="notice">This is a simulated transaction. No money will be collected or transferred.</p>
+    <button class="full-btn" onclick="completeTransaction()">COMPLETE MOCK TRANSACTION</button>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="receiptModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Generated Receipt</h2>
+      <button class="close-btn" onclick="closeModal('receiptModal')">×</button>
+    </div>
+    <div id="receiptContent"></div>
+    <div class="modal-actions">
+      <button class="secondary-btn" onclick="downloadReceipt(currentReceipt)">DOWNLOAD TXT</button>
+      <button class="secondary-btn" onclick="downloadReceiptJSON(currentReceipt)">DOWNLOAD JSON</button>
+      <button class="primary-btn" onclick="printReceipt()">PRINT</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="scannerModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Receipt QR Scanner</h2>
+      <button class="close-btn" onclick="closeModal('scannerModal')">×</button>
+    </div>
+    <video id="scannerVideo" class="scanner-video" playsinline></video>
+    <p class="notice" id="scannerStatus">Start the camera to scan a RoboLearn receipt QR code.</p>
+    <button class="full-btn" id="startScannerBtn" onclick="startScanner()">START CAMERA</button>
+    <div class="field" style="margin-top:18px">
+      <label>OR PASTE QR RECEIPT DATA</label>
+      <input id="manualQR" placeholder="Paste encoded receipt data">
+    </div>
+    <button class="secondary-btn" style="width:100%" onclick="decodeManualQR()">RECONSTRUCT RECEIPT</button>
+  </div>
+</div>
+
+<script>
+// @ts-check
+/* =========================================================
+   ROBOLEARN POS — SIMULATION ENGINE
+   v1.0.4 (Safari/Mobile Parser Fix)
+========================================================= */
+
+/**
+ * @typedef {Object} Product
+ * @property {number} id
+ * @property {string} name
+ * @property {string} category
+ * @property {string} description
+ * @property {number} price
+ * @property {number} stock
+ * @property {string} icon
+ */
+
+/**
+ * @typedef {Object} CartItem
+ * @property {number} id
+ * @property {string} name
+ * @property {string} category
+ * @property {string} description
+ * @property {number} price
+ * @property {number} stock
+ * @property {string} icon
+ * @property {number} quantity
+ */
+
+/**
+ * @typedef {Object} ReceiptItem
+ * @property {number} id
+ * @property {string} name
+ * @property {number} quantity
+ * @property {number} price
+ * @property {number} lineTotal
+ */
+
+/**
+ * @typedef {Object} Receipt
+ * @property {string} id
+ * @property {string} date
+ * @property {string} customer
+ * @property {string} method
+ * @property {ReceiptItem[]} items
+ * @property {number} subtotal
+ * @property {number} total
+ * @property {number} cashReceived
+ * @property {number} change
+ * @property {boolean} simulation
+ */
+
+const STORAGE_KEY = "robolearn_pos_v1";
+
+/** @type {Product[]} */
+const initialProducts = [
+  { id:1, name:"Robotics Starter Kit", category:"EDUCATIONAL KIT", description:"Beginner electronics package", price:1499, stock:20, icon:"robot" },
+  { id:2, name:"Arduino Learning Set", category:"MICROCONTROLLER", description:"Microcontroller learning kit", price:899, stock:15, icon:"chip" },
+  { id:3, name:"Sensor Module Pack", category:"ELECTRONICS", description:"Multi-sensor educational kit", price:499, stock:30, icon:"sensor" },
+  { id:4, name:"Motor Driver Module", category:"ELECTRONICS", description:"DC motor control module", price:299, stock:25, icon:"motor" },
+  { id:5, name:"Robot Chassis", category:"ROBOT PLATFORM", description:"Mobile robot platform", price:650, stock:12, icon:"chassis" },
+  { id:6, name:"Electronics Workbook", category:"LEARNING MATERIAL", description:"Practical learning material", price:199, stock:40, icon:"book" }
+];
+
+/** @type {Record<string, string>} */
+const illustrations = {
+  robot:`<rect x="7" y="7" width="34" height="34" rx="5"/><circle cx="17" cy="20" r="3"/><circle cx="31" cy="20" r="3"/><path d="M17 31h14M24 7V2M18 42v5M30 42v5"/>`,
+  chip:`<rect x="10" y="10" width="28" height="28" rx="3"/><rect x="17" y="17" width="14" height="14"/><path d="M15 3v7M23 3v7M31 3v7M15 38v7M23 38v7M31 38v7M3 15h7M3 23h7M3 31h7M38 15h7M38 23h7M38 31h7"/>`,
+  sensor:`<circle cx="24" cy="24" r="16"/><circle cx="24" cy="24" r="7"/><path d="M24 1v7M24 40v7M1 24h7M40 24h7"/>`,
+  motor:`<rect x="9" y="12" width="30" height="24" rx="5"/><path d="M39 19h5v10h-5M9 19H4v10h5M17 19h14M17 29h14"/>`,
+  chassis:`<rect x="9" y="12" width="30" height="25" rx="4"/><circle cx="7" cy="17" r="4"/><circle cx="41" cy="17" r="4"/><circle cx="7" cy="33" r="4"/><circle cx="41" cy="33" r="4"/><path d="M17 20h14v9H17z"/>`,
+  book:`<path d="M24 10C17 5 9 7 5 10v29c7-4 13-2 19 2z"/><path d="M24 10c7-5 15-3 19 0v29c-7-4-13-2-19 2z"/><path d="M11 17h8M11 23h8M29 17h8M29 23h8"/>`
+};
+
+// Safe fallback for structuredClone (fixes older mobile browser crashes)
+function cloneData(obj) {
+  if (typeof structuredClone === "function") return structuredClone(obj);
+  return JSON.parse(JSON.stringify(obj));
+}
+
+/**
+ * @param {string} key
+ * @param {any} fallback
+ * @returns {any}
+ */
+function loadData(key, fallback) {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY + "_" + key);
+    return stored ? JSON.parse(stored) : cloneData(fallback);
+  } catch {
+    return cloneData(fallback);
+  }
+}
+
+/** @type {Product[]} */
+let products = loadData("products", initialProducts);
+/** @type {Receipt[]} */
+let transactions = loadData("transactions", []);
+/** @type {Receipt[]} */
+let receipts = loadData("receipts", []);
+/** @type {CartItem[]} */
+let cart = [];
+/** @type {Receipt|null} */
+let currentReceipt = null;
+/** @type {MediaStream|null} */
+let scannerStream = null;
+/** @type {ReturnType<typeof setInterval>|null} */
+let scanInterval = null;
+/** @type {any} */
+let qrDetector = null;
+
+function saveData() {
+  localStorage.setItem(STORAGE_KEY + "_products", JSON.stringify(products));
+  localStorage.setItem(STORAGE_KEY + "_transactions", JSON.stringify(transactions));
+  localStorage.setItem(STORAGE_KEY + "_receipts", JSON.stringify(receipts));
+}
+
+/**
+ * @param {number} value
+ * @returns {string}
+ */
+function money(value) {
+  return "₱" + Number(value || 0).toLocaleString("en-PH", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
+/**
+ * @param {any} value
+ * @returns {string}
+ */
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (c) => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  })[c] || c);
+}
+
+function renderProducts() {
+  const container = document.getElementById("products");
+  if (!container) return;
+  container.innerHTML = products.map((/** @type {Product} */ p) => {
+    const inCart = cart.find((/** @type {CartItem} */ c) => c.id === p.id)?.quantity || 0;
+    const out = p.stock - inCart <= 0;
+    return `
+      <article class="product">
+        <div class="product-art">
+          <svg viewBox="0 0 48 48">${illustrations[p.icon] || illustrations.chip}</svg>
+        </div>
+        <div class="product-category">${escapeHTML(p.category)}</div>
+        <h3 class="product-name">${escapeHTML(p.name)}</h3>
+        <p class="product-description">${escapeHTML(p.description)}</p>
+        <div class="product-bottom">
+          <span class="product-price">${money(p.price)}</span>
+          <button class="primary-btn" onclick="addToCart(${p.id})" ${out ? "disabled" : ""}>
+            ${out ? "OUT OF STOCK" : "ADD"}
+          </button>
+        </div>
+      </article>`;
+  }).join("");
+}
+
+/** @param {number} id */
+function addToCart(id) {
+  const product = products.find((/** @type {Product} */ p) => p.id === id);
+  if (!product) return;
+
+  const existing = cart.find((/** @type {CartItem} */ item) => item.id === id);
+  const inCartQty = existing ? existing.quantity : 0;
+
+  if (inCartQty >= product.stock) {
+    alert("No more stock available for " + product.name);
+    return;
+  }
+
+  if (existing) {
+    existing.quantity++;
+  } else {
+    cart.push({ ...product, quantity: 1 });
+  }
+
+  renderCart();
+  renderProducts();
+}
+
+/** @param {number} id */
+function removeFromCart(id) {
+  cart = cart.filter((/** @type {CartItem} */ item) => item.id !== id);
+  renderCart();
+  renderProducts();
+}
+
+function renderCart() {
+  const container = document.getElementById("cartItems");
+  if (!container) return;
+
+  if (!cart.length) {
+    container.innerHTML = '<div class="empty">No items have been added.</div>';
+  } else {
+    container.innerHTML = cart.map((/** @type {CartItem} */ item) => `
+      <div class="cart-item">
+        <div>
+          <strong>${escapeHTML(item.name)}</strong>
+          <small>${item.quantity} × ${money(item.price)}</small>
+        </div>
+        <div class="cart-item-right">
+          ${money(item.price * item.quantity)}
+          <button class="remove-btn" onclick="removeFromCart(${item.id})">REMOVE</button>
+        </div>
+      </div>`).join("");
+  }
+
+  const count = cart.reduce((/** @type {number} */ s, /** @type {CartItem} */ i) => s + i.quantity, 0);
+  const total = getCartTotal();
+  
+  const itemCountEl = document.getElementById("itemCount");
+  if (itemCountEl) itemCountEl.textContent = count + (count === 1 ? " ITEM" : " ITEMS");
+  
+  const subtotalEl = document.getElementById("subtotal");
+  if (subtotalEl) subtotalEl.textContent = money(total);
+  
+  const totalEl = document.getElementById("total");
+  if (totalEl) totalEl.textContent = money(total);
+}
+
+/** @returns {number} */
+function getCartTotal() {
+  return cart.reduce((/** @type {number} */ s, /** @type {CartItem} */ i) => s + i.price * i.quantity, 0);
+}
+
+function openCheckout() {
+  if (!cart.length) { alert("Your cart is empty."); return; }
+
+  for (const item of cart) {
+    const p = products.find((/** @type {Product} */ x) => x.id === item.id);
+    if (!p || item.quantity > p.stock) {
+      alert(`${item.name} no longer has enough stock. Please adjust your cart.`);
+      return;
+    }
+  }
+
+  const total = getCartTotal();
+  const summary = document.getElementById("checkoutSummary");
+  if (summary) {
+    summary.innerHTML = `
+      <div><span>Products</span><span>${cart.length} types</span></div>
+      <div><span>Items</span><span>${cart.reduce((/** @type {number} */ s, /** @type {CartItem} */ i) => s + i.quantity, 0)}</span></div>
+      <div><span>Subtotal</span><span>${money(total)}</span></div>
+      <div><span>Total</span><span>${money(total)}</span></div>`;
+  }
+
+  const nameInput = /** @type {HTMLInputElement} */ (document.getElementById("customerName"));
+  if (nameInput) nameInput.value = "";
+  
+  const methodSelect = /** @type {HTMLSelectElement} */ (document.getElementById("paymentMethod"));
+  if (methodSelect) methodSelect.value = "Cash";
+  
+  const cashInput = /** @type {HTMLInputElement} */ (document.getElementById("cashReceived"));
+  if (cashInput) cashInput.value = "";
+
+  updatePaymentFields();
+  openModal("checkoutModal");
+}
+
+function updatePaymentFields() {
+  const methodSelect = /** @type {HTMLSelectElement} */ (document.getElementById("paymentMethod"));
+  if (!methodSelect) return;
+  
+  const isCash = methodSelect.value === "Cash";
+  const cashField = document.getElementById("cashField");
+  if (cashField) cashField.style.display = isCash ? "block" : "none";
+  
+  const changeDisplay = document.getElementById("changeDisplay");
+  if (changeDisplay) {
+    changeDisplay.textContent = isCash ? "Change: ₱0.00" : "Payment simulated — no cash received.";
+  }
+}
+
+function updateChange() {
+  const methodSelect = /** @type {HTMLSelectElement} */ (document.getElementById("paymentMethod"));
+  if (!methodSelect || methodSelect.value !== "Cash") return;
+
+  const cashInput = /** @type {HTMLInputElement} */ (document.getElementById("cashReceived"));
+  if (!cashInput) return;
+
+  const cash = Number(cashInput.value);
+  const total = getCartTotal();
+  const change = cash - total;
+  const display = document.getElementById("changeDisplay");
+  
+  if (display) {
+    if (!Number.isFinite(cash) || cash === 0) {
+      display.textContent = "Change: ₱0.00";
+    } else if (change >= 0) {
+      display.textContent = "Change: " + money(change);
+    } else {
+      display.textContent = "Remaining payment: " + money(Math.abs(change));
+    }
+  }
+}
+
+function completeTransaction() {
+  if (!cart.length) return;
+
+  const methodSelect = /** @type {HTMLSelectElement} */ (document.getElementById("paymentMethod"));
+  const method = methodSelect ? methodSelect.value : "Cash";
+  
+  const nameInput = /** @type {HTMLInputElement} */ (document.getElementById("customerName"));
+  const customer = (nameInput ? nameInput.value.trim() : "") || "Walk-in Customer";
+  
+  const total = getCartTotal();
+  let cash = total, change = 0;
+
+  if (method === "Cash") {
+    const cashInput = /** @type {HTMLInputElement} */ (document.getElementById("cashReceived"));
+    cash = cashInput ? Number(cashInput.value) : 0;
+    if (!Number.isFinite(cash) || cash < total) {
+      alert("Insufficient mock payment. Please enter an amount equal to or greater than the total.");
+      return;
+    }
+    change = cash - total;
+  }
+
+  for (const item of cart) {
+    const p = products.find((/** @type {Product} */ x) => x.id === item.id);
+    if (p) p.stock = Math.max(0, p.stock - item.quantity);
+  }
+
+  const now = new Date();
+  const id = "RL-" + now.getFullYear() + "-" + String(Date.now()).slice(-8);
+
+  /** @type {Receipt} */
+  const receipt = {
+    id,
+    date: now.toISOString(),
+    customer,
+    method,
+    items: cart.map((/** @type {CartItem} */ i) => ({
+      id: i.id, name: i.name,
+      quantity: i.quantity, price: i.price,
+      lineTotal: i.price * i.quantity
+    })),
+    subtotal: total, total,
+    cashReceived: cash, change,
+    simulation: true
+  };
+
+  transactions.unshift(receipt);
+  receipts.unshift(receipt);
+  cart = [];
+
+  saveData();
+  renderProducts();
+  renderCart();
+  renderInventory();
+  renderTransactions();
+  renderReceipts();
+
+  closeModal("checkoutModal");
+  showReceipt(receipt);
+}
+
+/** @param {Receipt} r @returns {string} */
+function receiptText(r) {
+  const line = "--------------------------------";
+  let text = `
+             ROBOLEARN
+       ROBOTICS SOLUTIONS
+          POINT OF SALE
+
+          SALES RECEIPT
+${line}
+Receipt: ${r.id}
+Date: ${new Date(r.date).toLocaleString("en-PH")}
+Customer: ${r.customer || "Walk-in Customer"}
+Payment: ${r.method}
+${line}
+`;
+  r.items.forEach((/** @type {ReceiptItem} */ item) => {
+    text += `${item.name}\n${item.quantity} x ${money(item.price)} = ${money(item.lineTotal)}\n\n`;
+  });
+  text += `${line}
+Subtotal:       ${money(r.subtotal)}
+TOTAL:          ${money(r.total)}
+Cash received:  ${money(r.cashReceived)}
+Change:         ${money(r.change)}
+${line}
+
+SIMULATION ONLY
+NOT A VALID PROOF OF PURCHASE
+
+Thank you for visiting RoboLearn.
+`;
+  return text.trim();
+}
+
+/** @param {Receipt} r @returns {string} */
+function encodeReceipt(r) {
+  const bytes = new TextEncoder().encode(JSON.stringify(r));
+  let binary = "";
+  bytes.forEach((/** @type {number} */ b) => { binary += String.fromCharCode(b); });
+  return "ROBOLEARN:" + btoa(binary)
+    .replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+
+/** @param {string} data @returns {Receipt} */
+function decodeReceipt(data) {
+  if (!data.startsWith("ROBOLEARN:"))
+    throw new Error("This is not a RoboLearn receipt QR code.");
+  let base64 = data.substring(10).replace(/-/g,"+").replace(/_/g,"/");
+  base64 += "=".repeat((4 - base64.length % 4) % 4);
+  const binary = atob(base64);
+  const bytes = Uint8Array.from(binary, (/** @type {string} */ c) => c.charCodeAt(0));
+  const receipt = JSON.parse(new TextDecoder().decode(bytes));
+
+  if (!receipt.id || !Array.isArray(receipt.items) || receipt.simulation !== true) {
+    throw new Error("Invalid receipt data.");
+  }
+  return receipt;
+}
+
+/** @param {Receipt} receipt */
+function showReceipt(receipt) {
+  currentReceipt = receipt;
+  const qrData = encodeReceipt(receipt);
+
+  const content = document.getElementById("receiptContent");
+  if (!content) return;
+
+  content.innerHTML = `
+    <div class="receipt-paper" id="receiptPaper">
+      <div class="receipt-center">
+        <div class="receipt-brand">ROBOLEARN</div>
+        <div class="receipt-small">ROBOTICS SOLUTIONS</div>
+        <div class="receipt-small">POINT OF SALE</div>
+        <div style="font-weight:bold;margin-top:12px">SALES RECEIPT</div>
+      </div>
+      <div class="receipt-warning">SIMULATION ONLY — NOT A VALID PROOF OF PURCHASE</div>
+      <div class="receipt-rule"></div>
+      <div class="receipt-small">
+        Receipt: ${escapeHTML(receipt.id)}<br>
+        Date: ${escapeHTML(new Date(receipt.date).toLocaleString("en-PH"))}<br>
+        Customer: ${escapeHTML(receipt.customer || "Walk-in Customer")}<br>
+        Payment: ${escapeHTML(receipt.method)}
+      </div>
+      <div class="receipt-rule"></div>
+      ${receipt.items.map((/** @type {ReceiptItem} */ item) => `
+        <div class="receipt-small" style="margin:9px 0">${escapeHTML(item.name)}</div>
+        <div class="receipt-line">
+          <span>${item.quantity} × ${money(item.price)}</span>
+          <span>${money(item.lineTotal)}</span>
+        </div>`).join("")}
+      <div class="receipt-rule"></div>
+      <div class="receipt-line"><span>Subtotal</span><span>${money(receipt.subtotal)}</span></div>
+      <div class="receipt-line receipt-total"><span>TOTAL</span><span>${money(receipt.total)}</span></div>
+      <div class="receipt-line"><span>Cash received</span><span>${money(receipt.cashReceived)}</span></div>
+      <div class="receipt-line"><span>Change</span><span>${money(receipt.change)}</span></div>
+      <div class="receipt-rule"></div>
+      <div class="receipt-center">
+        <div class="receipt-small">SCAN TO RECONSTRUCT RECEIPT</div>
+        <div class="qr-holder" id="receiptQR"></div>
+        <div class="receipt-small">Thank you for visiting RoboLearn.</div>
+        <div class="receipt-small">DEMONSTRATION TRANSACTION</div>
+      </div>
+    </div>`;
+
+  openModal("receiptModal");
+
+  const qrContainer = document.getElementById("receiptQR");
+  if (!qrContainer) return;
+
+  // Clear container to prevent the "removeChild" crash
+  qrContainer.innerHTML = "";
+
+  // @ts-ignore
+  if (typeof QRCode === "undefined") {
+    qrContainer.innerHTML = '<div class="qr-error">QR library unavailable. Check your internet connection.</div>';
+    return;
+  }
+  try {
+    // @ts-ignore
+    new QRCode(qrContainer, {
+      text: qrData, width: 145, height: 145,
+      colorDark: "#14243a", colorLight: "#ffffff",
+      // @ts-ignore
+      correctLevel: QRCode.CorrectLevel.L
+    });
+  } catch {
+    qrContainer.innerHTML = '<div class="qr-error">QR too large for this receipt — download JSON instead.</div>';
+  }
+}
+
+/** @param {Receipt|null} receipt */
+function downloadReceipt(receipt) {
+  if (!receipt) return;
+  const blob = new Blob([receiptText(receipt)], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = receipt.id + ".txt";
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/** @param {Receipt|null} receipt */
+function downloadReceiptJSON(receipt) {
+  if (!receipt) return;
+  const blob = new Blob([JSON.stringify(receipt, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = receipt.id + ".json";
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function printReceipt() {
+  const content = document.getElementById("receiptPaper");
+  if (!content) return;
+  const win = window.open("", "_blank");
+  if (!win) {
+    alert("Printing was blocked by your browser. Try downloading the receipt instead.");
+    return;
+  }
+  
+  // Use direct DOM writing to prevent the "Unexpected token '<'" crash in mobile editors
+  const doc = win.document;
+  doc.open();
+  doc.write('<!DOCTYPE html><html><head><title>RoboLearn Receipt</title>');
+  doc.write('<style>body{font-family:monospace;padding:15px}.receipt-paper{max-width:340px;margin:auto}.receipt-center{text-align:center}.receipt-brand{font-size:22px;font-weight:bold}.receipt-small{font-size:11px;line-height:1.7}.receipt-rule{border-top:1px dashed #555;margin:12px 0}.receipt-line{display:flex;justify-content:space-between;font-size:11px;margin:7px 0}.receipt-total{font-weight:bold;font-size:14px}.receipt-warning{border:1px solid #777;padding:7px;text-align:center;font-size:9px;margin:12px 0}.qr-holder{display:flex;justify-content:center;padding:12px}img{max-width:145px}</style></head><body>');
+  doc.write(content.innerHTML);
+  doc.write('</body></html>');
+  doc.close();
+  
+  win.focus();
+  setTimeout(() => {
+    win.print();
+    win.close();
+  }, 500);
+}
+
+function renderReceipts() {
+  const searchInput = /** @type {HTMLInputElement} */ (document.getElementById("receiptSearch"));
+  const search = (searchInput ? searchInput.value : "").toLowerCase();
+  
+  const filtered = receipts.filter((/** @type {Receipt} */ r) =>
+    r.id.toLowerCase().includes(search) ||
+    r.customer.toLowerCase().includes(search)
+  );
+  
+  const countEl = document.getElementById("receiptCount");
+  if (countEl) countEl.textContent = filtered.length + " / " + receipts.length + " RECEIPTS";
+  
+  const list = document.getElementById("receiptList");
+  if (!list) return;
+
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty">No receipts found.</div>';
+    return;
+  }
+  
+  list.innerHTML = filtered.map((/** @type {Receipt} */ r) => `
+    <div class="receipt-card">
+      <div>
+        <strong>${escapeHTML(r.id)}</strong>
+        <p>${escapeHTML(r.customer || "Walk-in Customer")} · ${escapeHTML(r.method)}</p>
+        <p>${new Date(r.date).toLocaleString("en-PH")}</p>
+        <p><strong>${money(r.total)}</strong> · SIMULATED</p>
+      </div>
+      <div class="card-actions">
+        <button class="secondary-btn" onclick="openArchivedReceipt('${escapeHTML(r.id)}')">VIEW</button>
+        <button class="secondary-btn" onclick="downloadById('${escapeHTML(r.id)}')">DOWNLOAD</button>
+      </div>
+    </div>`).join("");
+}
+
+/** @param {string} id */
+function openArchivedReceipt(id) {
+  const receipt = receipts.find((/** @type {Receipt} */ r) => r.id === id);
+  if (receipt) showReceipt(receipt);
+}
+
+/** @param {string} id */
+function downloadById(id) {
+  const receipt = receipts.find((/** @type {Receipt} */ r) => r.id === id);
+  if (receipt) downloadReceipt(receipt);
+}
+
+function renderTransactions() {
+  const countEl = document.getElementById("transactionCount");
+  if (countEl) countEl.textContent = transactions.length + " RECORDS";
+  
+  const list = document.getElementById("transactionList");
+  if (!list) return;
+
+  if (!transactions.length) {
+    list.innerHTML = '<div class="empty">No transactions recorded.</div>';
+    return;
+  }
+  
+  list.innerHTML = transactions.map((/** @type {Receipt} */ r) => `
+    <div class="receipt-card">
+      <div>
+        <strong>${escapeHTML(r.id)}</strong>
+        <p>${escapeHTML(r.customer || "Walk-in Customer")} · ${escapeHTML(r.method)}</p>
+        <p>${new Date(r.date).toLocaleString("en-PH")}</p>
+      </div>
+      <strong>${money(r.total)}</strong>
+    </div>`).join("");
+}
+
+function renderInventory() {
+  const searchInput = /** @type {HTMLInputElement} */ (document.getElementById("inventorySearch"));
+  const search = (searchInput ? searchInput.value : "").toLowerCase();
+  
+  const filtered = products.filter((/** @type {Product} */ p) => p.name.toLowerCase().includes(search));
+  
+  const list = document.getElementById("inventoryList");
+  if (!list) return;
+
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty">No products match your search.</div>';
+    return;
+  }
+  
+  list.innerHTML = filtered.map((/** @type {Product} */ p) => `
+    <div class="receipt-card">
+      <div>
+        <strong>${escapeHTML(p.name)}</strong>
+        <p>${escapeHTML(p.category)}</p>
+        <p>${money(p.price)} · ${p.stock} units</p>
+      </div>
+      <span class="muted">${p.stock > 0 ? "IN STOCK" : "OUT OF STOCK"}</span>
+    </div>`).join("");
+}
+
+function openScanner() {
+  openModal("scannerModal");
+  const status = document.getElementById("scannerStatus");
+  if (status) status.textContent = "Start the camera to scan a RoboLearn receipt QR code.";
+}
+
+async function startScanner() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    alert("Camera access is unavailable. Try a supported browser over HTTPS or localhost.");
+    return;
+  }
+  // @ts-ignore
+  if (!("BarcodeDetector" in window)) {
+    const status = document.getElementById("scannerStatus");
+    if (status) status.textContent = "This browser does not support built-in QR detection. You can paste the QR data below.";
+    return;
+  }
+  try {
+    // @ts-ignore
+    qrDetector = new window.BarcodeDetector({ formats: ["qr_code"] });
+    scannerStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: "environment" } }, audio: false
+    });
+    const video = /** @type {HTMLVideoElement} */ (document.getElementById("scannerVideo"));
+    if (video) {
+      video.srcObject = scannerStream;
+      await video.play();
+    }
+    const status = document.getElementById("scannerStatus");
+    if (status) status.textContent = "Camera active. Point it at a RoboLearn receipt QR code.";
+    const btn = document.getElementById("startScannerBtn");
+    if (btn) btn.textContent = "CAMERA ACTIVE";
+    scanInterval = setInterval(scanFrame, 500);
+  } catch (/** @type {any} */ error) {
+    const status = document.getElementById("scannerStatus");
+    if (status) status.textContent = "Camera could not start: " + error.message;
+  }
+}
+
+async function scanFrame() {
+  const video = /** @type {HTMLVideoElement} */ (document.getElementById("scannerVideo"));
+  if (!qrDetector || !video || video.readyState < 2) return;
+  try {
+    const codes = await qrDetector.detect(video);
+    if (codes && codes.length) {
+      stopScanner();
+      closeModal("scannerModal");
+      reconstructReceipt(codes[0].rawValue);
+    }
+  } catch (err) { console.error(err); }
+}
+
+function stopScanner() {
+  if (scanInterval) { clearInterval(scanInterval); scanInterval = null; }
+  if (scannerStream) {
+    scannerStream.getTracks().forEach((/** @type {MediaStreamTrack} */ t) => t.stop());
+    scannerStream = null;
+  }
+  const video = /** @type {HTMLVideoElement} */ (document.getElementById("scannerVideo"));
+  if (video) video.srcObject = null;
+  const btn = document.getElementById("startScannerBtn");
+  if (btn) btn.textContent = "START CAMERA";
+}
+
+function decodeManualQR() {
+  const input = /** @type {HTMLInputElement} */ (document.getElementById("manualQR"));
+  if (!input) return;
+  const value = input.value.trim();
+  if (!value) { alert("Paste the QR receipt data first."); return; }
+  stopScanner();
+  closeModal("scannerModal");
+  reconstructReceipt(value);
+}
+
+/** @param {string} raw */
+function reconstructReceipt(raw) {
+  try {
+    const receipt = decodeReceipt(raw);
+    if (!receipts.some((/** @type {Receipt} */ r) => r.id === receipt.id)) {
+      receipts.unshift(receipt);
+      saveData();
+      renderReceipts();
+    }
+    showReceipt(receipt);
+  } catch (/** @type {any} */ error) {
+    alert("Could not reconstruct receipt: " + error.message);
+  }
+}
+
+/** @type {Record<string, [string,string]>} */
+const pageNames = {
+  pos: ["Point of Sale","Manage simulated sales and transactions."],
+  inventory: ["Inventory","Review available products and stock."],
+  transactions: ["Transactions","View simulated transaction history."],
+  receipts: ["Receipts","View, download and reconstruct receipts."],
+  settings: ["Settings","Manage the local demonstration system."]
+};
+
+document.querySelectorAll(".nav-item").forEach((item) => {
+  item.addEventListener("click", () => {
+    const el = /** @type {HTMLElement} */ (item);
+    const page = el.dataset.page;
+    if (!page) return;
+    
+    document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+    el.classList.add("active");
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+    
+    const pageEl = document.getElementById("page-" + page);
+    if (pageEl) pageEl.classList.add("active");
+    
+    const title = pageNames[page];
+    if (title) {
+      const titleEl = document.getElementById("pageTitle");
+      if (titleEl) titleEl.textContent = title[0];
+      const subEl = document.getElementById("pageSubtitle");
+      if (subEl) subEl.textContent = title[1];
+    }
+    
+    if (page === "inventory") renderInventory();
+    if (page === "transactions") renderTransactions();
+    if (page === "receipts") renderReceipts();
+    if (page === "pos") { renderProducts(); renderCart(); }
+  });
+});
+
+/** @param {string} id */
+function openModal(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.add("open");
+}
+
+/** @param {string} id */
+function closeModal(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.remove("open");
+  if (id === "scannerModal") stopScanner();
+}
+
+function exportBackup() {
+  const backup = {
+    application: "RoboLearn POS",
+    version: "1.0.4",
+    exportedAt: new Date().toISOString(),
+    products, transactions, receipts
+  };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "robolearn-backup.json";
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function clearDemoData() {
+  if (!confirm("Reset all products, transactions and receipts?")) return;
+  products = cloneData(initialProducts);
+  transactions = [];
+  receipts = [];
+  cart = [];
+  saveData();
+  renderProducts();
+  renderCart();
+  renderInventory();
+  renderTransactions();
+  renderReceipts();
+  alert("Demo data reset to original state.");
+}
+
+/* ---------- Init ---------- */
+renderProducts();
+renderCart();
+renderInventory();
+renderTransactions();
+renderReceipts();
+
+/* ---------- Explicit Window Assignments (Fixes "not defined" errors) ---------- */
+window.addToCart = addToCart;
+window.removeFromCart = removeFromCart;
+window.openCheckout = openCheckout;
+window.updatePaymentFields = updatePaymentFields;
+window.updateChange = updateChange;
+window.completeTransaction = completeTransaction;
+window.downloadReceipt = downloadReceipt;
+window.downloadReceiptJSON = downloadReceiptJSON;
+window.printReceipt = printReceipt;
+window.openArchivedReceipt = openArchivedReceipt;
+window.downloadById = downloadById;
+window.openScanner = openScanner;
+window.startScanner = startScanner;
+window.decodeManualQR = decodeManualQR;
+window.exportBackup = exportBackup;
+window.clearDemoData = clearDemoData;
+window.closeModal = closeModal;
+window.renderInventory = renderInventory;
+window.renderReceipts = renderReceipts;
+
+</script>
+
+</body>
+</html>
