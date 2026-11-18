@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14243a">
 <title>RoboLearn POS</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -145,6 +145,49 @@ video{width:100%;border-radius:7px;background:#101b2d;max-height:280px;object-fi
 }
 @media(max-width:480px){.products{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.stat strong{font-size:16px}.page-title{font-size:20px}.status{display:none}}
 @media print{body *{visibility:hidden}.receipt-paper,.receipt-paper *{visibility:visible}.receipt-paper{position:absolute;left:0;top:0;border:0}}
+
+/* ---- v2.1 any-device layer ---- */
+html{-webkit-text-size-adjust:100%}
+body{overflow-x:hidden;min-height:100vh;min-height:100dvh}
+button,.chip,.product,.nav-item,label.secondary-btn{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.sidebar{height:100vh;height:100dvh;overflow-y:auto}
+.cart{max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);overflow-y:auto}
+.mb{padding:max(14px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) max(14px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left))}
+.modal{max-height:94vh;max-height:94dvh;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.toast{max-width:90vw;text-align:center}
+.scrim{display:none}
+.file-btn{display:block;text-align:center;margin-top:8px;cursor:pointer}
+@media(min-width:1500px){.products{grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}.workspace{grid-template-columns:minmax(0,1fr) 380px}}
+@media(max-width:1100px){.main{padding:22px 20px 40px}.workspace{grid-template-columns:minmax(0,1fr) 300px;gap:16px}}
+@media(pointer:coarse),(max-width:900px){
+ input,select{font-size:16px!important}
+ .search,.sel,.field input,.field select{min-height:46px}
+ .primary-btn,.secondary-btn{min-height:42px;padding:10px 14px}
+ .chip{padding:10px 15px}
+ .nav-item{padding:14px 12px}
+ .qty button{width:40px;height:40px}
+ .quick button{padding:10px 14px}
+ .rm,.link-btn{min-height:36px;padding:0 6px}
+ .x{width:44px;height:44px}
+}
+@media(max-width:900px){
+ .main{padding:14px max(14px,env(safe-area-inset-right)) calc(88px + env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left))}
+ .cart{max-height:86vh;max-height:86dvh;visibility:hidden;transition:transform .25s,visibility 0s .25s;padding-bottom:calc(18px + env(safe-area-inset-bottom))}
+ .cart.open{visibility:visible;transition:transform .25s}
+ .scrim{display:block;position:fixed;inset:0;background:rgba(9,20,34,.5);z-index:19;opacity:0;pointer-events:none;transition:opacity .25s}
+ .scrim.open{opacity:1;pointer-events:auto}
+ .fab{bottom:calc(70px + env(safe-area-inset-bottom));right:max(14px,env(safe-area-inset-right))}
+ .bnav button{min-height:54px;font-size:11px}
+ .toast{bottom:calc(132px + env(safe-area-inset-bottom))}
+ .mb{align-items:flex-end;padding:0}
+ .modal{max-width:none;border-radius:16px 16px 0 0;max-height:92vh;max-height:92dvh;padding:20px 18px calc(20px + env(safe-area-inset-bottom))}
+ .pcat,.pdesc,.card p{font-size:12px}
+ .actions{width:100%}
+ .actions .secondary-btn{flex:1}
+}
+@media(max-width:480px){.topbar{margin-bottom:12px}.demo-banner{font-size:11px;padding:9px 11px;margin-bottom:14px}.pname{font-size:12.5px}.art{height:56px;font-size:26px}.macts button{min-width:90px}}
+@media(max-height:520px) and (orientation:landscape){.sidebar-footer{display:none}.nav{margin-top:14px}.modal{max-height:100vh;max-height:100dvh}.cart-items{max-height:30vh}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
 <body>
@@ -152,7 +195,7 @@ video{width:100%;border-radius:7px;background:#101b2d;max-height:280px;object-fi
 <aside class="sidebar">
   <div class="brand">ROBOLEARN<small>Robotics solutions</small></div>
   <nav class="nav" id="nav"></nav>
-  <div class="sidebar-footer">RoboLearn POS v2.0<br>Local demonstration</div>
+  <div class="sidebar-footer">RoboLearn POS v2.1<br>Local demonstration</div>
 </aside>
 <main class="main">
 <header class="topbar">
@@ -215,6 +258,7 @@ video{width:100%;border-radius:7px;background:#101b2d;max-height:280px;object-fi
 </div>
 
 <button class="fab" id="fab" onclick="toggleCart(true)">🛒 <span id="fabTxt">View order</span></button>
+<div class="scrim" id="cartScrim" onclick="toggleCart(false)"></div>
 <div class="bnav" id="bnav"></div>
 
 <div class="mb" id="checkoutModal"><div class="modal">
@@ -222,7 +266,7 @@ video{width:100%;border-radius:7px;background:#101b2d;max-height:280px;object-fi
  <div class="cs" id="coSum"></div>
  <div class="field"><label for="cust">Customer name</label><input id="cust" placeholder="Walk-in customer"></div>
  <div class="field"><label for="pm">Payment method</label><select id="pm" onchange="payUI()"><option>Cash</option><option>GCash (Mock)</option><option>Card (Mock)</option><option>Bank Transfer (Mock)</option></select></div>
- <div class="field" id="cashField"><label for="cash">Cash received (PHP)</label><input type="number" id="cash" min="0" step="0.01" placeholder="Enter amount" oninput="updChange()"><div class="quick" id="quick"></div></div>
+ <div class="field" id="cashField"><label for="cash">Cash received (PHP)</label><input type="number" inputmode="decimal" id="cash" min="0" step="0.01" placeholder="Enter amount" oninput="updChange()"><div class="quick" id="quick"></div></div>
  <div class="change" id="chg">Change: ₱0.00</div>
  <p class="notice">This is a simulated transaction. No money is collected or transferred.</p>
  <button class="full-btn" id="payBtn" onclick="completeSale()">Complete mock transaction</button>
@@ -239,6 +283,7 @@ video{width:100%;border-radius:7px;background:#101b2d;max-height:280px;object-fi
  <video id="vid" playsinline muted></video>
  <p class="notice" id="scanStatus">Start the camera and point it at a RoboLearn receipt QR code.</p>
  <button class="full-btn" onclick="startScan()" style="margin-top:0">Start camera</button>
+ <label class="secondary-btn file-btn">Take or upload a photo<input type="file" accept="image/*" hidden onchange="scanFile(this)"></label>
  <div class="field" style="margin-top:16px"><label for="manual">Or paste receipt data</label><input id="manual" placeholder="Paste encoded receipt data"></div>
  <button class="secondary-btn" style="width:100%" onclick="manualDecode()">Rebuild receipt</button>
 </div></div>
@@ -373,14 +418,15 @@ const money=n=>"₱"+Number(n).toLocaleString("en-PH",{minimumFractionDigits:2,m
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const prod=id=>S.products.find(p=>p.id===id);
 function toast(m){const t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),1800)}
-function openModal(id){$(id).classList.add("open")}
-function closeModal(id){$(id).classList.remove("open");if(id==="scanModal")stopScan()}
+function lock(){document.body.style.overflow=(document.querySelector(".mb.open")||$("cart").classList.contains("open"))?"hidden":""}
+function openModal(id){$(id).classList.add("open");lock()}
+function closeModal(id){$(id).classList.remove("open");if(id==="scanModal")stopScan();lock()}
 document.querySelectorAll(".mb").forEach(m=>m.addEventListener("click",e=>{if(e.target===m)closeModal(m.id)}));
-document.addEventListener("keydown",e=>{if(e.key==="Escape")document.querySelectorAll(".mb.open").forEach(m=>closeModal(m.id));if(e.key==="/"&&!/INPUT|SELECT/.test(document.activeElement.tagName)){e.preventDefault();go("pos");$("q").focus()}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){document.querySelectorAll(".mb.open").forEach(m=>closeModal(m.id));toggleCart(false)}if(e.key==="/"&&!/INPUT|SELECT/.test(document.activeElement.tagName)){e.preventDefault();go("pos");$("q").focus()}});
 
 /* navigation */
 $("nav").innerHTML=Object.entries(PAGES).map(([k,v])=>`<button class="nav-item" data-p="${k}"><span>${v[2]}</span>${v[0]}</button>`).join("");
-$("bnav").innerHTML=Object.entries(PAGES).filter(([k])=>k!=="settings").map(([k,v])=>`<button data-p="${k}"><span>${v[2]}</span>${v[0].split(" ")[0]}</button>`).join("")+`<button data-p="settings"><span>⚙</span>Settings</button>`;
+const SH={pos:"Sell",inventory:"Stock",transactions:"Sales",receipts:"Receipts",settings:"Settings"};$("bnav").innerHTML=Object.entries(PAGES).map(([k,v])=>`<button data-p="${k}"><span>${v[2]}</span>${SH[k]}</button>`).join("");
 document.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>go(b.dataset.p));
 function go(p){document.querySelectorAll(".page").forEach(x=>x.classList.toggle("active",x.id==="page-"+p));document.querySelectorAll("[data-p]").forEach(b=>b.classList.toggle("active",b.dataset.p===p));$("pageTitle").textContent=PAGES[p][0];$("pageSub").textContent=PAGES[p][1];toggleCart(false);$("fab").style.display=p==="pos"?"":"none";({pos:renderProducts,inventory:renderInventory,transactions:renderTx,receipts:renderReceipts})[p]?.()}
 
@@ -408,7 +454,7 @@ function renderCart(){const l=cartList(),n=l.reduce((s,x)=>s+x.q,0),t=cartTotal(
  $("ic").textContent="· "+n+" item"+(n===1?"":"s");
  $("cartItems").innerHTML=l.length?l.map(({p,q})=>`<div class="ci"><div><strong>${esc(p.name)}</strong><div class="qty"><button onclick="add(${p.id},-1)" aria-label="Decrease">−</button><span>${q}</span><button onclick="add(${p.id},1)" aria-label="Increase">+</button></div></div><div class="ci-r">${money(p.price*q)}<br><button class="rm" onclick="rmItem(${p.id})">Remove</button></div></div>`).join(""):`<div class="empty">Your order is empty.<br>Tap a product to add it.</div>`;
  $("subtotal").textContent=$("total").textContent=money(t);$("coBtn").disabled=!l.length;$("fabTxt").textContent=n?`${n} item${n>1?"s":""} · ${money(t)}`:"View order"}
-function toggleCart(o){$("cart").classList.toggle("open",o)}
+function toggleCart(o){$("cart").classList.toggle("open",o);$("cartScrim").classList.toggle("open",o);lock()}
 
 /* checkout */
 function openCheckout(){const l=cartList();if(!l.length)return;const t=cartTotal();
@@ -456,7 +502,8 @@ function restock(id){prod(id).stock+=10;save();renderInventory();toast("Added 10
 function openScanner(){$("scanStatus").textContent="Start the camera and point it at a RoboLearn receipt QR code.";openModal("scanModal")}
 async function startScan(){const st=$("scanStatus");try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});const v=$("vid");v.srcObject=stream;await v.play();st.textContent="Scanning…";const det="BarcodeDetector"in window?new BarcodeDetector({formats:["qr_code"]}):null,cv=document.createElement("canvas"),cx=cv.getContext("2d",{willReadFrequently:true});
  scanTimer=setInterval(async()=>{if(!v.videoWidth)return;let txt=null;try{if(det){const r=await det.detect(v);txt=r[0]?.rawValue}else if(window.jsQR){cv.width=v.videoWidth;cv.height=v.videoHeight;cx.drawImage(v,0,0);const im=cx.getImageData(0,0,cv.width,cv.height);txt=jsQR(im.data,cv.width,cv.height)?.data}}catch(e){}
-  if(txt){try{const r=decode(txt);closeModal("scanModal");showReceipt(r);toast("Receipt rebuilt")}catch(e){st.textContent="That QR code is not a RoboLearn receipt. Keep scanning or paste the data."}}},400)}catch(e){st.textContent="Camera unavailable. Allow camera access, or paste the receipt data below."}}
+  if(txt){try{const r=decode(txt);closeModal("scanModal");showReceipt(r);toast("Receipt rebuilt")}catch(e){st.textContent="That QR code is not a RoboLearn receipt. Keep scanning or paste the data."}}},400)}catch(e){st.textContent="Camera unavailable. Allow camera access (it needs https or localhost), or use Take or upload a photo."}}
+function scanFile(inp){const f=inp.files[0];if(!f)return;const img=new Image();img.onload=()=>{const cv=document.createElement("canvas"),k=Math.min(1,1400/Math.max(img.width,img.height));cv.width=Math.round(img.width*k);cv.height=Math.round(img.height*k);const cx=cv.getContext("2d");cx.drawImage(img,0,0,cv.width,cv.height);let t=null;try{t=window.jsQR&&jsQR(cx.getImageData(0,0,cv.width,cv.height).data,cv.width,cv.height)?.data}catch(e){}URL.revokeObjectURL(img.src);try{if(!t)throw 0;const r=decode(t);closeModal("scanModal");showReceipt(r);toast("Receipt rebuilt")}catch(e){$("scanStatus").textContent="No RoboLearn QR code found in that photo. Try a closer, clearer picture."}inp.value=""};img.onerror=()=>{$("scanStatus").textContent="Could not open that image."};img.src=URL.createObjectURL(f)}
 function stopScan(){clearInterval(scanTimer);if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}}
 function manualDecode(){try{const r=decode($("manual").value);closeModal("scanModal");showReceipt(r)}catch(e){$("scanStatus").textContent="Could not read that data. Check that you pasted the full code."}}
 
