@@ -33,12 +33,13 @@ button{cursor:pointer}
 .section-title{font-size:15px;font-weight:750;margin-bottom:16px}
 .section-subtitle{color:var(--muted);font-size:11px;margin-top:-10px;margin-bottom:17px}
 .products{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
-.product{background:#fff;border:1px solid var(--line);border-radius:8px;padding:15px;transition:.2s}
+.product{background:#fff;border:1px solid var(--line);border-radius:8px;padding:15px;transition:.2s;cursor:pointer}
 .product:hover{transform:translateY(-2px);border-color:#b9c7d7}
 .product-art{height:100px;display:grid;place-items:center;background:#f0f2f5;border-radius:5px;margin-bottom:14px}
 .product-art svg{width:54px;height:54px;stroke:#51657d;fill:none;stroke-width:1.4}
 .product-category{font-size:9px;color:var(--muted);letter-spacing:1px;margin-bottom:6px}
-.product-name{font-size:13px;font-weight:700;margin-bottom:5px}
+.product-name{font-size:13px;font-weight:700;margin-bottom:5px;text-decoration:underline;text-decoration-color:transparent;transition:text-decoration-color .2s}
+.product:hover .product-name{text-decoration-color:var(--navy)}
 .product-description{font-size:10px;color:var(--muted);line-height:1.5}
 .product-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:16px;gap:5px}
 .product-price{font-size:13px;font-weight:800}
@@ -105,6 +106,8 @@ button{cursor:pointer}
 .modal-actions button{flex:1;min-width:110px}
 .scanner-video{width:100%;border-radius:7px;background:#101b2d;max-height:300px;object-fit:cover}
 .notice{color:var(--muted);font-size:11px;line-height:1.6;margin:12px 0}
+.included-list{margin:0;padding-left:20px;font-size:12px;line-height:1.8;color:var(--navy)}
+.included-list li{margin-bottom:6px}
 @media(max-width:900px){.sidebar{width:190px}.workspace{grid-template-columns:1fr}}
 @media(max-width:550px){.sidebar{display:none}.main{padding:18px 13px}.page-title{font-size:21px}.products{gap:9px}.product{padding:11px}.product-art{height:80px}.product-name{font-size:11px}.product-price{font-size:11px}.product-bottom{align-items:flex-start;flex-direction:column}.add-btn{width:100%}.receipt-card{align-items:flex-start;flex-direction:column}}
 </style>
@@ -122,7 +125,7 @@ button{cursor:pointer}
   <div class="nav-item" data-page="receipts"><span class="nav-icon">▧</span> Receipts</div>
   <div class="nav-label">SYSTEM</div>
   <div class="nav-item" data-page="settings"><span class="nav-icon">⚙</span> Settings</div>
-  <div class="sidebar-footer">ROBOLEARN POS<br>VERSION 1.0.4<br>LOCAL DEMONSTRATION</div>
+  <div class="sidebar-footer">ROBOLEARN POS<br>VERSION 1.1.0<br>LOCAL DEMONSTRATION</div>
 </aside>
 
 <main class="main">
@@ -142,7 +145,7 @@ button{cursor:pointer}
   <div class="workspace">
     <section>
       <h2 class="section-title">Product Catalog</h2>
-      <p class="section-subtitle">Select products to add to the order.</p>
+      <p class="section-subtitle">Select products to add to the order. Click a product to see what's included.</p>
       <div class="products" id="products"></div>
     </section>
     <aside class="cart">
@@ -275,11 +278,23 @@ button{cursor:pointer}
   </div>
 </div>
 
+<!-- WHAT'S INCLUDED MODAL -->
+<div class="modal-backdrop" id="includedModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="includedTitle">What's Included</h2>
+      <button class="close-btn" onclick="closeModal('includedModal')">×</button>
+    </div>
+    <div id="includedContent"></div>
+    <button class="full-btn" style="margin-top:20px" onclick="closeModal('includedModal')">GOT IT</button>
+  </div>
+</div>
+
 <script>
 // @ts-check
 /* =========================================================
    ROBOLEARN POS — SIMULATION ENGINE
-   v1.0.4 (Safari/Mobile Parser Fix)
+   v1.1.0 (Expanded Catalog + Included Modal)
 ========================================================= */
 
 /**
@@ -291,6 +306,7 @@ button{cursor:pointer}
  * @property {number} price
  * @property {number} stock
  * @property {string} icon
+ * @property {string[]} included
  */
 
 /**
@@ -332,12 +348,214 @@ const STORAGE_KEY = "robolearn_pos_v1";
 
 /** @type {Product[]} */
 const initialProducts = [
-  { id:1, name:"Robotics Starter Kit", category:"EDUCATIONAL KIT", description:"Beginner electronics package", price:1499, stock:20, icon:"robot" },
-  { id:2, name:"Arduino Learning Set", category:"MICROCONTROLLER", description:"Microcontroller learning kit", price:899, stock:15, icon:"chip" },
-  { id:3, name:"Sensor Module Pack", category:"ELECTRONICS", description:"Multi-sensor educational kit", price:499, stock:30, icon:"sensor" },
-  { id:4, name:"Motor Driver Module", category:"ELECTRONICS", description:"DC motor control module", price:299, stock:25, icon:"motor" },
-  { id:5, name:"Robot Chassis", category:"ROBOT PLATFORM", description:"Mobile robot platform", price:650, stock:12, icon:"chassis" },
-  { id:6, name:"Electronics Workbook", category:"LEARNING MATERIAL", description:"Practical learning material", price:199, stock:40, icon:"book" }
+  // --- Existing Products ---
+  { 
+    id:1, name:"Robotics Starter Kit", category:"EDUCATIONAL KIT", description:"Beginner electronics package", 
+    price:1499, stock:20, icon:"robot",
+    included: [
+      "1x Microcontroller Board (Arduino-compatible)",
+      "1x USB Cable",
+      "1x Breadboard (400 tie-point)",
+      "20x Jumper Wires (Male-to-Male)",
+      "1x LED Pack (Red, Green, Blue)",
+      "1x Resistor Pack (220Ω, 10kΩ)",
+      "1x Ultrasonic Sensor",
+      "1x Servo Motor (SG90)",
+      "1x Plastic Chassis Platform",
+      "1x Learning Guide (Printed)"
+    ]
+  },
+  { 
+    id:2, name:"Arduino Learning Set", category:"MICROCONTROLLER", description:"Microcontroller learning kit", 
+    price:899, stock:15, icon:"chip",
+    included: [
+      "1x Arduino Uno R3 Board",
+      "1x USB Type-B Cable",
+      "1x Breadboard (830 tie-point)",
+      "65x Jumper Wires (Assorted)",
+      "1x LED Assortment (30 pcs)",
+      "1x Push Button Pack (5 pcs)",
+      "1x Potentiometer (10kΩ)",
+      "1x Buzzer Module",
+      "1x Temperature Sensor (LM35)",
+      "1x Project Booklet with 15 experiments"
+    ]
+  },
+  { 
+    id:3, name:"Sensor Module Pack", category:"ELECTRONICS", description:"Multi-sensor educational kit", 
+    price:499, stock:30, icon:"sensor",
+    included: [
+      "1x IR Obstacle Avoidance Sensor",
+      "1x Line Tracking Sensor",
+      "1x Sound Detection Sensor",
+      "1x Vibration Sensor",
+      "1x Tilt Sensor (SW-520D)",
+      "1x Flame Sensor",
+      "1x Light Dependent Resistor (LDR) Module",
+      "10x Female-to-Male Jumper Wires",
+      "1x Quick Reference Card"
+    ]
+  },
+  { 
+    id:4, name:"Motor Driver Module", category:"ELECTRONICS", description:"DC motor control module", 
+    price:299, stock:25, icon:"motor",
+    included: [
+      "1x L298N Dual H-Bridge Motor Driver",
+      "1x Heat Sink",
+      "4x Screw Terminals",
+      "1x Datasheet & Wiring Guide",
+      "4x Jumper Wires for logic connections"
+    ]
+  },
+  { 
+    id:5, name:"Robot Chassis", category:"ROBOT PLATFORM", description:"Mobile robot platform", 
+    price:650, stock:12, icon:"chassis",
+    included: [
+      "1x Acrylic Chassis Plate (2 layers)",
+      "2x DC Gear Motors (TT Motor)",
+      "2x Rubber Wheels (65mm)",
+      "1x Ball Caster (Front support)",
+      "1x Battery Holder (4x AA)",
+      "1x Screw & Nut Pack",
+      "1x Assembly Instructions"
+    ]
+  },
+  { 
+    id:6, name:"Electronics Workbook", category:"LEARNING MATERIAL", description:"Practical learning material", 
+    price:199, stock:40, icon:"book",
+    included: [
+      "1x Printed Workbook (120 pages)",
+      "Covers: Basic circuits, Ohm's law, Breadboarding, Microcontroller intro",
+      "Includes 10 step-by-step projects",
+      "Troubleshooting section",
+      "Glossary of terms"
+    ]
+  },
+  // --- NEW PRODUCTS ---
+  {
+    id:7, name:"Line Tracing Kit Basic", category:"COMPETITION KIT", description:"Entry-level line following robot kit", 
+    price:2499, stock:18, icon:"box",
+    included: [
+      "1x Line Tracing Chassis (Acrylic)",
+      "2x DC Gear Motors with Wheels",
+      "1x Line Tracking Sensor Array (3-channel)",
+      "1x Motor Driver Board",
+      "1x Microcontroller Board (pre-flashed with basic line following code)",
+      "1x Battery Pack (4x AA) with Switch",
+      "1x USB Programming Cable",
+      "1x Calibration Guide & Track Setup Instructions"
+    ]
+  },
+  {
+    id:8, name:"Line Tracing Kit Advanced", category:"COMPETITION KIT", description:"High-performance line following robot kit", 
+    price:3999, stock:10, icon:"box",
+    included: [
+      "1x Lightweight Aluminum Chassis",
+      "2x High-Speed Coreless Motors",
+      "1x 5-Channel Precision Line Sensor Array",
+      "1x Advanced Motor Driver (with PWM tuning)",
+      "1x Programmable Microcontroller (Arduino-compatible)",
+      "1x Lithium Battery Pack & Charger",
+      "1x PID Tuning Software & Guide",
+      "1x Competition Track Mat (Practice)"
+    ]
+  },
+  {
+    id:9, name:"Sumobot Kit Basic", category:"COMPETITION KIT", description:"Entry-level sumo robot kit", 
+    price:2999, stock:15, icon:"box",
+    included: [
+      "1x Sumo Chassis (Wood/Acrylic)",
+      "2x High-Torque DC Motors",
+      "2x Silicone Competition Tires",
+      "1x IR Edge Detection Sensor (2 pcs)",
+      "1x Ultrasonic Opponent Sensor",
+      "1x Motor Driver Board",
+      "1x Microcontroller (pre-loaded with sumo logic)",
+      "1x Battery Pack (9V or 4x AA)",
+      "1x Push Button (Start)",
+      "1x Building & Strategy Manual"
+    ]
+  },
+  {
+    id:10, name:"Sumobot Kit Advanced", category:"COMPETITION KIT", description:"Competition-grade sumo robot kit", 
+    price:4999, stock:8, icon:"box",
+    included: [
+      "1x Precision-Machined Aluminum Chassis",
+      "2x High-Speed Brushless Motors with ESCs",
+      "2x Custom Silicone Tires (High Grip)",
+      "1x Advanced IR Edge Detection Array (4 sensors)",
+      "1x Sharp Distance Sensor (Opponent detection)",
+      "1x Programmable Microcontroller (Arduino/ESP32)",
+      "1x High-Capacity LiPo Battery & Balance Charger",
+      "1x Aluminum Scoop/Blade",
+      "1x Advanced Programming Guide (with autonomous strategies)"
+    ]
+  },
+  {
+    id:11, name:"Competition Kit (Mega Bundle)", category:"BUNDLE", description:"All four competition kits in one package", 
+    price:12999, stock:5, icon:"box",
+    included: [
+      "1x Line Tracing Kit Basic (ID: 7)",
+      "1x Line Tracing Kit Advanced (ID: 8)",
+      "1x Sumobot Kit Basic (ID: 9)",
+      "1x Sumobot Kit Advanced (ID: 10)",
+      "1x Competition Rulebook",
+      "1x Carrying Case for all components",
+      "1x 2-hour Virtual Coaching Session"
+    ]
+  },
+  {
+    id:12, name:"Basic Edukit", category:"EDUCATIONAL KIT", description:"Foundational STEM robotics kit", 
+    price:1999, stock:25, icon:"box",
+    included: [
+      "1x Microcontroller Board (Arduino-compatible)",
+      "1x Mini Breadboard",
+      "1x LED & Resistor Pack",
+      "1x Push Button",
+      "1x Buzzer",
+      "1x Light Sensor (LDR)",
+      "1x Temperature Sensor",
+      "10x Jumper Wires",
+      "1x Project Guide (5 basic experiments)"
+    ]
+  },
+  {
+    id:13, name:"Advance Edukit", category:"EDUCATIONAL KIT", description:"Intermediate robotics & sensor kit", 
+    price:3499, stock:15, icon:"box",
+    included: [
+      "1x Advanced Microcontroller Board",
+      "1x Full-size Breadboard",
+      "1x Sensor Pack (Ultrasonic, IR, Sound, Tilt)",
+      "1x Servo Motor",
+      "1x LCD Display (16x2)",
+      "1x Motor Driver",
+      "1x DC Motor (for demonstrations)",
+      "30x Jumper Wires",
+      "1x Project Guide (10 intermediate experiments)"
+    ]
+  },
+  {
+    id:14, name:"Combo Edukit", category:"BUNDLE", description:"Basic + Advance kits together", 
+    price:4999, stock:10, icon:"box",
+    included: [
+      "1x Basic Edukit (ID: 12)",
+      "1x Advance Edukit (ID: 13)",
+      "1x Storage Box",
+      "1x Combined Project Guide (15 experiments)"
+    ]
+  },
+  {
+    id:15, name:"School Edukit (5 Kits)", category:"CLASSROOM BUNDLE", description:"5 complete kits for classroom use", 
+    price:14999, stock:6, icon:"box",
+    included: [
+      "5x Basic Edukit (ID: 12)",
+      "5x Advance Edukit (ID: 13)",
+      "1x Teacher's Manual & Curriculum Guide",
+      "1x Classroom Storage Rack",
+      "1x Spare Parts Kit (extra sensors, wires, LEDs)",
+      "1x Setup & Maintenance Guide"
+    ]
+  }
 ];
 
 /** @type {Record<string, string>} */
@@ -347,7 +565,8 @@ const illustrations = {
   sensor:`<circle cx="24" cy="24" r="16"/><circle cx="24" cy="24" r="7"/><path d="M24 1v7M24 40v7M1 24h7M40 24h7"/>`,
   motor:`<rect x="9" y="12" width="30" height="24" rx="5"/><path d="M39 19h5v10h-5M9 19H4v10h5M17 19h14M17 29h14"/>`,
   chassis:`<rect x="9" y="12" width="30" height="25" rx="4"/><circle cx="7" cy="17" r="4"/><circle cx="41" cy="17" r="4"/><circle cx="7" cy="33" r="4"/><circle cx="41" cy="33" r="4"/><path d="M17 20h14v9H17z"/>`,
-  book:`<path d="M24 10C17 5 9 7 5 10v29c7-4 13-2 19 2z"/><path d="M24 10c7-5 15-3 19 0v29c-7-4-13-2-19 2z"/><path d="M11 17h8M11 23h8M29 17h8M29 23h8"/>`
+  book:`<path d="M24 10C17 5 9 7 5 10v29c7-4 13-2 19 2z"/><path d="M24 10c7-5 15-3 19 0v29c-7-4-13-2-19 2z"/><path d="M11 17h8M11 23h8M29 17h8M29 23h8"/>`,
+  box:`<rect x="8" y="14" width="32" height="24" rx="2"/><path d="M8 20h32M24 14V6M16 6h16M16 38v4M32 38v4"/>`
 };
 
 // Safe fallback for structuredClone (fixes older mobile browser crashes)
@@ -414,6 +633,25 @@ function escapeHTML(value) {
   })[c] || c);
 }
 
+function openIncludedModal(productId) {
+  const product = products.find(p => p.id === productId);
+  if (!product) return;
+  
+  const titleEl = document.getElementById("includedTitle");
+  const contentEl = document.getElementById("includedContent");
+  if (!titleEl || !contentEl) return;
+  
+  titleEl.textContent = product.name + " — What's Included";
+  
+  if (product.included && product.included.length > 0) {
+    contentEl.innerHTML = `<ul class="included-list">${product.included.map(item => `<li>${escapeHTML(item)}</li>`).join("")}</ul>`;
+  } else {
+    contentEl.innerHTML = `<p class="notice">No itemized contents listed for this product.</p>`;
+  }
+  
+  openModal("includedModal");
+}
+
 function renderProducts() {
   const container = document.getElementById("products");
   if (!container) return;
@@ -421,14 +659,14 @@ function renderProducts() {
     const inCart = cart.find((/** @type {CartItem} */ c) => c.id === p.id)?.quantity || 0;
     const out = p.stock - inCart <= 0;
     return `
-      <article class="product">
+      <article class="product" onclick="openIncludedModal(${p.id})">
         <div class="product-art">
-          <svg viewBox="0 0 48 48">${illustrations[p.icon] || illustrations.chip}</svg>
+          <svg viewBox="0 0 48 48">${illustrations[p.icon] || illustrations.box}</svg>
         </div>
         <div class="product-category">${escapeHTML(p.category)}</div>
         <h3 class="product-name">${escapeHTML(p.name)}</h3>
         <p class="product-description">${escapeHTML(p.description)}</p>
-        <div class="product-bottom">
+        <div class="product-bottom" onclick="event.stopPropagation()">
           <span class="product-price">${money(p.price)}</span>
           <button class="primary-btn" onclick="addToCart(${p.id})" ${out ? "disabled" : ""}>
             ${out ? "OUT OF STOCK" : "ADD"}
@@ -747,7 +985,6 @@ function showReceipt(receipt) {
   const qrContainer = document.getElementById("receiptQR");
   if (!qrContainer) return;
 
-  // Clear container to prevent the "removeChild" crash
   qrContainer.innerHTML = "";
 
   // @ts-ignore
@@ -801,7 +1038,6 @@ function printReceipt() {
     return;
   }
   
-  // Use direct DOM writing to prevent the "Unexpected token '<'" crash in mobile editors
   const doc = win.document;
   doc.open();
   doc.write('<!DOCTYPE html><html><head><title>RoboLearn Receipt</title>');
@@ -1054,7 +1290,7 @@ function closeModal(id) {
 function exportBackup() {
   const backup = {
     application: "RoboLearn POS",
-    version: "1.0.4",
+    version: "1.1.0",
     exportedAt: new Date().toISOString(),
     products, transactions, receipts
   };
@@ -1089,7 +1325,8 @@ renderInventory();
 renderTransactions();
 renderReceipts();
 
-/* ---------- Explicit Window Assignments (Fixes "not defined" errors) ---------- */
+/* ---------- Explicit Window Assignments ---------- */
+window.openIncludedModal = openIncludedModal;
 window.addToCart = addToCart;
 window.removeFromCart = removeFromCart;
 window.openCheckout = openCheckout;
