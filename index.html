@@ -5,1349 +5,466 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#14243a">
 <title>RoboLearn POS</title>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
 <style>
-:root{--navy:#14243a;--navy2:#20344e;--blue:#416b9b;--paper:#f5f4f0;--white:#fff;--muted:#929ba7;--line:#e7e7e2;--green:#39765d;--red:#a75252}
+:root{--navy:#14243a;--navy2:#20344e;--blue:#3d6a9e;--paper:#f3f4f1;--muted:#7d8795;--line:#e3e5e1;--green:#2f7a5b;--red:#b04a4a;--amber:#b7791f;--r:8px}
 *{box-sizing:border-box;margin:0;padding:0;font-family:Inter,"Segoe UI",Arial,sans-serif}
-body{background:var(--paper);color:var(--navy)}
-button,input,select{font:inherit}
+body{background:var(--paper);color:var(--navy);font-size:14px}
+button,input,select{font:inherit;color:inherit}
 button{cursor:pointer}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .app{display:flex;min-height:100vh}
-.sidebar{width:230px;background:var(--navy);color:#fff;padding:28px 17px;display:flex;flex-direction:column;flex-shrink:0}
-.brand{padding:0 10px;font-size:20px;font-weight:800;letter-spacing:1.7px}
-.brand-sub{font-size:9px;color:#a2b0c2;letter-spacing:2px;margin-top:6px}
-.nav-label{font-size:9px;letter-spacing:2px;color:#77889e;margin:38px 10px 12px}
-.nav-item{display:flex;align-items:center;gap:12px;padding:13px 12px;border-radius:6px;color:#bdc7d3;font-size:12px;cursor:pointer;margin-bottom:4px}
+.sidebar{width:220px;background:var(--navy);color:#fff;padding:26px 14px;display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh}
+.brand{padding:0 10px;font-size:19px;font-weight:800;letter-spacing:1.5px}
+.brand small{display:block;font-size:10px;color:#a2b0c2;letter-spacing:1.5px;font-weight:500;margin-top:5px}
+.nav{margin-top:30px}
+.nav-item{display:flex;align-items:center;gap:12px;width:100%;padding:12px;border:0;background:none;border-radius:6px;color:#bdc7d3;font-size:13px;margin-bottom:3px;text-align:left}
 .nav-item:hover,.nav-item.active{background:#2b405c;color:#fff}
-.nav-icon{width:18px;text-align:center;font-size:15px}
-.sidebar-footer{margin-top:auto;padding:15px 10px;color:#8493a7;font-size:10px;line-height:1.9}
-.main{flex:1;min-width:0;padding:30px}
-.topbar{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:27px}
-.page-title{font-size:25px;font-weight:750}
-.page-subtitle{color:var(--muted);font-size:12px;margin-top:6px}
-.status{background:#e6efe8;color:var(--green);padding:9px 12px;border-radius:5px;font-size:10px;font-weight:750;white-space:nowrap}
-.demo-banner{padding:12px 15px;background:#e9edf3;border:1px solid #d8e0e9;border-radius:7px;margin-bottom:24px;font-size:11px;color:#42536b}
+.nav-item span:first-child{width:20px;text-align:center}
+.sidebar-footer{margin-top:auto;padding:10px;color:#8493a7;font-size:11px;line-height:1.7}
+.main{flex:1;min-width:0;padding:26px 28px 40px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+.page-title{font-size:24px;font-weight:750}
+.page-subtitle{color:var(--muted);font-size:13px;margin-top:4px}
+.status{background:#e1ece5;color:var(--green);padding:7px 11px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+.demo-banner{padding:10px 14px;background:#e8edf3;border-radius:var(--r);margin-bottom:20px;font-size:12px;color:#42536b}
+.page{display:none}.page.active{display:block}
 .workspace{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:22px;align-items:start}
-.section-title{font-size:15px;font-weight:750;margin-bottom:16px}
-.section-subtitle{color:var(--muted);font-size:11px;margin-top:-10px;margin-bottom:17px}
-.products{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
-.product{background:#fff;border:1px solid var(--line);border-radius:8px;padding:15px;transition:.2s;cursor:pointer}
-.product:hover{transform:translateY(-2px);border-color:#b9c7d7}
-.product-art{height:100px;display:grid;place-items:center;background:#f0f2f5;border-radius:5px;margin-bottom:14px}
-.product-art svg{width:54px;height:54px;stroke:#51657d;fill:none;stroke-width:1.4}
-.product-category{font-size:9px;color:var(--muted);letter-spacing:1px;margin-bottom:6px}
-.product-name{font-size:13px;font-weight:700;margin-bottom:5px;text-decoration:underline;text-decoration-color:transparent;transition:text-decoration-color .2s}
-.product:hover .product-name{text-decoration-color:var(--navy)}
-.product-description{font-size:10px;color:var(--muted);line-height:1.5}
-.product-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:16px;gap:5px}
-.product-price{font-size:13px;font-weight:800}
-.primary-btn{background:var(--navy);color:#fff;border:0;padding:9px 12px;border-radius:5px;font-size:10px;font-weight:700}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.search,.sel{padding:11px 13px;border:1px solid var(--line);background:#fff;border-radius:var(--r);outline:none;font-size:13px}
+.search{flex:1;min-width:180px}
+.search:focus,.field input:focus,.field select:focus{border-color:var(--blue)}
+.chips{display:flex;gap:7px;overflow-x:auto;padding-bottom:8px;margin-bottom:10px;scrollbar-width:thin}
+.chip{border:1px solid var(--line);background:#fff;padding:7px 13px;border-radius:20px;font-size:12px;white-space:nowrap}
+.chip.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.count{color:var(--muted);font-size:12px;margin:2px 0 12px}
+.products{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+.product{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:12px;display:flex;flex-direction:column;cursor:pointer;position:relative;text-align:left}
+.product:hover{border-color:#a9bbd0}
+.product.out{opacity:.55}
+.art{height:70px;display:grid;place-items:center;background:#eef1f4;border-radius:6px;margin-bottom:10px;font-size:32px}
+.pcat{font-size:11px;color:var(--muted);margin-bottom:3px}
+.pname{font-size:13px;font-weight:700;line-height:1.3;margin-bottom:4px}
+.pdesc{font-size:11px;color:var(--muted);line-height:1.4;flex:1}
+.pbot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:6px}
+.price{font-size:14px;font-weight:800}
+.badge{position:absolute;top:8px;right:8px;font-size:10px;font-weight:700;padding:3px 7px;border-radius:10px;background:#fbefd9;color:var(--amber)}
+.badge.out{background:#f5dede;color:var(--red)}
+.primary-btn{background:var(--navy);color:#fff;border:0;padding:9px 13px;border-radius:6px;font-size:12px;font-weight:700}
 .primary-btn:hover{background:var(--blue)}
 .primary-btn:disabled{background:#c4ccd6;cursor:not-allowed}
-.cart{background:#fff;border:1px solid var(--line);border-radius:8px;padding:20px}
-.cart-heading{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:16px}
-.cart-heading strong{font-size:14px}
-.muted{color:var(--muted);font-size:10px}
-.cart-items{min-height:120px}
-.empty{text-align:center;padding:40px 8px;color:var(--muted);font-size:11px}
-.cart-item{display:flex;justify-content:space-between;gap:10px;padding:13px 0;border-bottom:1px solid var(--line)}
-.cart-item strong{font-size:11px}
-.cart-item small{display:block;color:var(--muted);margin-top:5px;font-size:10px}
-.cart-item-right{text-align:right;white-space:nowrap;font-size:11px;font-weight:700}
-.remove-btn{display:block;margin-top:5px;border:0;background:none;color:var(--red);font-size:9px}
-.cart-summary{border-top:1px solid var(--line);padding-top:16px;margin-top:12px}
-.summary-row{display:flex;justify-content:space-between;margin-bottom:12px;font-size:11px}
-.total-row{font-size:19px;font-weight:800;border-top:1px solid var(--line);padding-top:15px;margin-top:16px}
-.full-btn{width:100%;border:0;background:var(--blue);color:#fff;padding:14px;border-radius:5px;font-size:11px;font-weight:750;margin-top:12px}
-.full-btn:hover{background:var(--navy)}
-.page{display:none}
-.page.active{display:block}
-.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap}
-.search{padding:11px 13px;border:1px solid var(--line);background:#fff;border-radius:5px;outline:none;width:min(100%,280px);font-size:12px}
-.search:focus,.field input:focus,.field select:focus{border-color:var(--blue)}
-.receipt-list{display:grid;gap:10px}
-.receipt-card{background:#fff;border:1px solid var(--line);border-radius:7px;padding:16px;display:flex;justify-content:space-between;align-items:center;gap:12px}
-.receipt-card strong{font-size:12px}
-.receipt-card p{font-size:10px;color:var(--muted);margin-top:5px}
-.card-actions{display:flex;gap:7px;flex-wrap:wrap}
-.secondary-btn{background:#fff;border:1px solid var(--line);padding:9px 11px;border-radius:5px;font-size:10px;color:var(--navy)}
+.secondary-btn{background:#fff;border:1px solid var(--line);padding:9px 12px;border-radius:6px;font-size:12px}
 .secondary-btn:hover{background:var(--paper)}
-.settings-card{background:#fff;border:1px solid var(--line);padding:20px;border-radius:8px;margin-bottom:15px}
-.settings-card h3{font-size:14px;margin-bottom:9px}
-.settings-card p{color:var(--muted);font-size:11px;line-height:1.7}
-.modal-backdrop{position:fixed;inset:0;background:rgba(9,20,34,.66);display:none;align-items:center;justify-content:center;padding:15px;z-index:10;overflow-y:auto}
-.modal-backdrop.open{display:flex}
-.modal{width:100%;max-width:510px;max-height:95vh;overflow-y:auto;background:#fff;border-radius:9px;padding:24px}
-.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
-.modal-header h2{font-size:19px}
-.close-btn{border:0;background:none;font-size:22px;color:var(--muted)}
-.field{margin-bottom:15px}
-.field label{display:block;font-size:10px;font-weight:700;margin-bottom:7px}
-.field input,.field select{width:100%;padding:12px;border:1px solid var(--line);border-radius:5px;outline:none;background:#fff;font-size:12px}
-.checkout-summary{background:var(--paper);padding:15px;border-radius:6px;margin-bottom:17px}
-.checkout-summary div{display:flex;justify-content:space-between;font-size:11px;margin-bottom:9px}
-.checkout-summary div:last-child{font-size:17px;font-weight:800;margin:0;padding-top:10px;border-top:1px solid var(--line)}
-.change-display{background:#e9f1eb;color:var(--green);padding:13px;border-radius:5px;font-size:12px;margin-bottom:15px}
-.receipt-paper{background:#fff;color:#182333;width:100%;max-width:340px;margin:0 auto;padding:20px;font-family:monospace;box-shadow:0 3px 18px #00000010}
+.cart{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:18px;position:sticky;top:16px}
+.cart-head{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:12px}
+.cart-items{max-height:42vh;overflow-y:auto;min-height:90px}
+.empty{text-align:center;padding:34px 8px;color:var(--muted);font-size:13px;line-height:1.5}
+.ci{display:flex;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
+.ci strong{font-size:12px;display:block;margin-bottom:6px}
+.qty{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:6px}
+.qty button{border:0;background:none;width:28px;height:28px;font-size:15px}
+.qty span{min-width:26px;text-align:center;font-size:12px;font-weight:700}
+.ci-r{text-align:right;font-size:12px;font-weight:700}
+.rm{border:0;background:none;color:var(--red);font-size:11px;margin-top:8px}
+.sum{padding-top:14px}
+.row{display:flex;justify-content:space-between;margin-bottom:9px;font-size:13px}
+.total{font-size:20px;font-weight:800;border-top:1px solid var(--line);padding-top:12px;margin-top:6px}
+.full-btn{width:100%;border:0;background:var(--blue);color:#fff;padding:14px;border-radius:6px;font-size:13px;font-weight:700;margin-top:10px}
+.full-btn:hover{background:var(--navy)}
+.full-btn:disabled{background:#c4ccd6;cursor:not-allowed}
+.link-btn{border:0;background:none;color:var(--muted);font-size:12px;text-decoration:underline}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.section-title{font-size:16px;font-weight:750}
+.list{display:grid;gap:9px}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.card strong{font-size:13px}
+.card p{font-size:12px;color:var(--muted);margin-top:4px}
+.actions{display:flex;gap:7px;flex-wrap:wrap}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.stat p{font-size:12px;color:var(--muted)}.stat strong{font-size:20px;display:block;margin-top:6px}
+.tag{font-size:11px;font-weight:700;padding:3px 8px;border-radius:10px;background:#e1ece5;color:var(--green)}
+.tag.low{background:#fbefd9;color:var(--amber)}.tag.out{background:#f5dede;color:var(--red)}
+.settings-card{background:#fff;border:1px solid var(--line);padding:18px;border-radius:var(--r);margin-bottom:12px}
+.settings-card h3{font-size:14px;margin-bottom:8px}
+.settings-card p{color:var(--muted);font-size:13px;line-height:1.6;margin-bottom:10px}
+.settings-card .actions{margin-top:6px}
+.mb{position:fixed;inset:0;background:rgba(9,20,34,.66);display:none;align-items:center;justify-content:center;padding:14px;z-index:30}
+.mb.open{display:flex}
+.modal{width:100%;max-width:490px;max-height:94vh;overflow-y:auto;background:#fff;border-radius:10px;padding:22px}
+.mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.mh h2{font-size:18px}
+.x{border:0;background:none;font-size:24px;color:var(--muted);line-height:1}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;font-weight:700;margin-bottom:6px}
+.field input,.field select{width:100%;padding:12px;border:1px solid var(--line);border-radius:6px;outline:none;background:#fff;font-size:14px}
+.cs{background:var(--paper);padding:14px;border-radius:6px;margin-bottom:16px}
+.cs div{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px}
+.cs div:last-child{font-size:17px;font-weight:800;margin:0;padding-top:9px;border-top:1px solid var(--line)}
+.quick{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.quick button{border:1px solid var(--line);background:#fff;border-radius:16px;padding:6px 11px;font-size:12px}
+.change{background:#e9f1eb;color:var(--green);padding:12px;border-radius:6px;font-size:13px;margin-bottom:14px;font-weight:600}
+.change.bad{background:#f7e4e4;color:var(--red)}
+.notice{color:var(--muted);font-size:12px;line-height:1.6;margin:10px 0}
+.inc{padding-left:20px;font-size:13px;line-height:1.8}
+.inc-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
+.receipt-paper{background:#fff;color:#182333;width:100%;max-width:340px;margin:0 auto;padding:18px;font-family:monospace;border:1px solid var(--line)}
 .receipt-paper *{font-family:monospace}
-.receipt-center{text-align:center}
-.receipt-brand{font-size:21px;font-weight:900;letter-spacing:1px}
-.receipt-small{font-size:10px;line-height:1.7}
-.receipt-rule{border-top:1px dashed #777;margin:12px 0}
-.receipt-line{display:flex;justify-content:space-between;gap:8px;font-size:10px;margin:7px 0}
-.receipt-total{font-size:14px;font-weight:900}
-.receipt-warning{border:1px solid #a77b38;color:#8c6020;font-size:9px;font-weight:bold;padding:7px;text-align:center;margin:12px 0}
-.qr-holder{display:flex;justify-content:center;padding:12px 0;min-height:145px;align-items:center}
-.qr-holder img,.qr-holder canvas{max-width:150px;max-height:150px}
-.qr-error{font-size:10px;color:var(--red);text-align:center;padding:20px}
-.modal-actions{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}
-.modal-actions button{flex:1;min-width:110px}
-.scanner-video{width:100%;border-radius:7px;background:#101b2d;max-height:300px;object-fit:cover}
-.notice{color:var(--muted);font-size:11px;line-height:1.6;margin:12px 0}
-.included-list{margin:0;padding-left:20px;font-size:12px;line-height:1.8;color:var(--navy)}
-.included-list li{margin-bottom:6px}
-@media(max-width:900px){.sidebar{width:190px}.workspace{grid-template-columns:1fr}}
-@media(max-width:550px){.sidebar{display:none}.main{padding:18px 13px}.page-title{font-size:21px}.products{gap:9px}.product{padding:11px}.product-art{height:80px}.product-name{font-size:11px}.product-price{font-size:11px}.product-bottom{align-items:flex-start;flex-direction:column}.add-btn{width:100%}.receipt-card{align-items:flex-start;flex-direction:column}}
+.rc{text-align:center}
+.rbrand{font-size:20px;font-weight:900;letter-spacing:1px}
+.rs{font-size:11px;line-height:1.7}
+.rule{border-top:1px dashed #777;margin:11px 0}
+.rl{display:flex;justify-content:space-between;gap:8px;font-size:11px;margin:6px 0}
+.rt{font-size:14px;font-weight:900}
+.rw{border:1px solid #a77b38;color:#8c6020;font-size:10px;font-weight:bold;padding:6px;text-align:center;margin:11px 0}
+.qr{display:flex;justify-content:center;padding:10px 0;min-height:140px;align-items:center}
+.qr img,.qr canvas{max-width:150px;max-height:150px}
+.qr-err{font-size:11px;color:var(--red);text-align:center}
+.macts{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.macts button{flex:1;min-width:100px}
+video{width:100%;border-radius:7px;background:#101b2d;max-height:280px;object-fit:cover}
+.toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;padding:11px 18px;border-radius:24px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:50}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.fab,.bnav,.cart-close{display:none}
+@media(max-width:900px){
+.sidebar{display:none}
+.main{padding:16px 14px 90px}
+.workspace{grid-template-columns:1fr}
+.cart{position:fixed;left:0;right:0;bottom:0;top:auto;z-index:20;border-radius:14px 14px 0 0;max-height:88vh;overflow-y:auto;transform:translateY(105%);transition:transform .25s}
+.cart.open{transform:none;box-shadow:0 -10px 40px #0005}
+.cart-items{max-height:34vh}
+.fab{display:flex;position:fixed;right:14px;bottom:74px;z-index:15;background:var(--blue);color:#fff;border:0;border-radius:28px;padding:13px 18px;font-weight:700;font-size:13px;box-shadow:0 4px 16px #0004;gap:8px}
+.bnav{display:flex;position:fixed;left:0;right:0;bottom:0;background:var(--navy);z-index:14;padding:4px 0 max(4px,env(safe-area-inset-bottom))}
+.bnav button{flex:1;border:0;background:none;color:#a9b6c7;font-size:10px;padding:7px 2px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.bnav button span{font-size:17px}
+.bnav button.active{color:#fff}
+.cart-close{display:inline-block}
+.stats{grid-template-columns:1fr 1fr 1fr}
+.card{flex-direction:column;align-items:flex-start}
+}
+@media(max-width:480px){.products{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.stat strong{font-size:16px}.page-title{font-size:20px}.status{display:none}}
+@media print{body *{visibility:hidden}.receipt-paper,.receipt-paper *{visibility:visible}.receipt-paper{position:absolute;left:0;top:0;border:0}}
 </style>
 </head>
-
 <body>
-
 <div class="app">
 <aside class="sidebar">
-  <div class="brand">ROBOLEARN<div class="brand-sub">ROBOTICS SOLUTIONS</div></div>
-  <div class="nav-label">WORKSPACE</div>
-  <div class="nav-item active" data-page="pos"><span class="nav-icon">▦</span> Point of Sale</div>
-  <div class="nav-item" data-page="inventory"><span class="nav-icon">▤</span> Inventory</div>
-  <div class="nav-item" data-page="transactions"><span class="nav-icon">◷</span> Transactions</div>
-  <div class="nav-item" data-page="receipts"><span class="nav-icon">▧</span> Receipts</div>
-  <div class="nav-label">SYSTEM</div>
-  <div class="nav-item" data-page="settings"><span class="nav-icon">⚙</span> Settings</div>
-  <div class="sidebar-footer">ROBOLEARN POS<br>VERSION 1.1.0<br>LOCAL DEMONSTRATION</div>
+  <div class="brand">ROBOLEARN<small>Robotics solutions</small></div>
+  <nav class="nav" id="nav"></nav>
+  <div class="sidebar-footer">RoboLearn POS v2.0<br>Local demonstration</div>
 </aside>
-
 <main class="main">
 <header class="topbar">
-  <div>
-    <h1 class="page-title" id="pageTitle">Point of Sale</h1>
-    <p class="page-subtitle" id="pageSubtitle">Manage simulated sales and transactions.</p>
-  </div>
-  <div class="status">SIMULATION MODE</div>
+  <div><h1 class="page-title" id="pageTitle">Point of sale</h1><p class="page-subtitle" id="pageSub"></p></div>
+  <div class="status">Simulation mode</div>
 </header>
-
-<div class="demo-banner">
-  DEMONSTRATION ENVIRONMENT — All orders, payments and receipts are simulated. No real payments are processed.
-</div>
+<div class="demo-banner">Demonstration only. Orders, payments and receipts are simulated, and no real payments are processed.</div>
 
 <section class="page active" id="page-pos">
-  <div class="workspace">
-    <section>
-      <h2 class="section-title">Product Catalog</h2>
-      <p class="section-subtitle">Select products to add to the order. Click a product to see what's included.</p>
-      <div class="products" id="products"></div>
-    </section>
-    <aside class="cart">
-      <div class="cart-heading">
-        <strong>Current Order</strong>
-        <span class="muted" id="itemCount">0 ITEMS</span>
-      </div>
-      <div class="cart-items" id="cartItems">
-        <div class="empty">No items have been added.</div>
-      </div>
-      <div class="cart-summary">
-        <div class="summary-row"><span>Subtotal</span><span id="subtotal">₱0.00</span></div>
-        <div class="summary-row"><span>Discount</span><span>₱0.00</span></div>
-        <div class="summary-row total-row"><span>Total</span><span id="total">₱0.00</span></div>
-        <button class="full-btn" onclick="openCheckout()">PROCEED TO CHECKOUT</button>
-      </div>
-    </aside>
-  </div>
+ <div class="workspace">
+  <section>
+   <div class="tools">
+    <input class="search" id="q" placeholder="Search products (press / to focus)" oninput="renderProducts()">
+    <select class="sel" id="sort" onchange="renderProducts()">
+     <option value="name">Name A–Z</option><option value="pa">Price: low to high</option><option value="pd">Price: high to low</option><option value="stock">Most in stock</option>
+    </select>
+   </div>
+   <div class="chips" id="chips"></div>
+   <p class="count" id="pcount"></p>
+   <div class="products" id="products"></div>
+  </section>
+  <aside class="cart" id="cart">
+   <div class="cart-head"><strong>Current order <span class="muted" id="ic" style="color:var(--muted);font-weight:400"></span></strong>
+    <span><button class="link-btn" onclick="clearCart()">Clear</button> <button class="x cart-close" onclick="toggleCart(false)" aria-label="Close order">×</button></span></div>
+   <div class="cart-items" id="cartItems"></div>
+   <div class="sum">
+    <div class="row"><span>Subtotal</span><span id="subtotal"></span></div>
+    <div class="row total"><span>Total</span><span id="total"></span></div>
+    <button class="full-btn" id="coBtn" onclick="openCheckout()">Proceed to checkout</button>
+   </div>
+  </aside>
+ </div>
 </section>
 
 <section class="page" id="page-inventory">
-  <div class="toolbar">
-    <h2 class="section-title">Product Inventory</h2>
-    <input class="search" id="inventorySearch" placeholder="Search products..." oninput="renderInventory()">
-  </div>
-  <div id="inventoryList" class="receipt-list"></div>
+ <div class="toolbar"><h2 class="section-title">Product inventory</h2>
+  <div class="tools" style="margin:0"><input class="search" id="iq" placeholder="Search products" oninput="renderInventory()"><select class="sel" id="ic2" onchange="renderInventory()"></select></div></div>
+ <div class="list" id="invList"></div>
 </section>
 
 <section class="page" id="page-transactions">
-  <div class="toolbar">
-    <h2 class="section-title">Transaction History</h2>
-    <span class="muted" id="transactionCount">0 RECORDS</span>
-  </div>
-  <div id="transactionList" class="receipt-list"></div>
+ <div class="stats" id="stats"></div>
+ <div class="toolbar"><h2 class="section-title">Transaction history</h2><span class="count" id="tc"></span></div>
+ <div class="list" id="txList"></div>
 </section>
 
 <section class="page" id="page-receipts">
-  <div class="toolbar">
-    <h2 class="section-title">Receipt Archive</h2>
-    <button class="primary-btn" onclick="openScanner()">SCAN QR RECEIPT</button>
-  </div>
-  <div class="toolbar">
-    <input class="search" id="receiptSearch" placeholder="Search receipt number..." oninput="renderReceipts()">
-    <span class="muted" id="receiptCount">0 RECEIPTS</span>
-  </div>
-  <div id="receiptList" class="receipt-list"></div>
+ <div class="toolbar"><h2 class="section-title">Receipt archive</h2><button class="primary-btn" onclick="openScanner()">Scan QR receipt</button></div>
+ <div class="tools"><input class="search" id="rq" placeholder="Search receipt number or customer" oninput="renderReceipts()"></div>
+ <div class="list" id="rcList"></div>
 </section>
 
 <section class="page" id="page-settings">
-  <div class="settings-card">
-    <h3>System Configuration</h3>
-    <p>RoboLearn POS is running in local simulation mode. No external payment gateway or server is connected.</p>
-  </div>
-  <div class="settings-card">
-    <h3>Data Storage</h3>
-    <p>Products and simulated transactions are saved in this browser's local storage.</p>
-  </div>
-  <div class="settings-card">
-    <h3>Receipt System</h3>
-    <p>Receipts contain encoded transaction information. QR reconstruction works without a website or external database.</p>
-  </div>
-  <div class="settings-card">
-    <h3>Data Management</h3>
-    <button class="secondary-btn" onclick="exportBackup()">EXPORT BACKUP</button>
-    <button class="secondary-btn" onclick="clearDemoData()">RESET DEMO DATA</button>
-  </div>
+ <div class="settings-card"><h3>System</h3><p>RoboLearn POS runs in local simulation mode. No payment gateway or server is connected.</p></div>
+ <div class="settings-card"><h3>Data storage</h3><p>Products, stock, orders and receipts are saved in this browser's local storage.</p></div>
+ <div class="settings-card"><h3>Receipts</h3><p>Each receipt carries its own encoded data, so the QR code can rebuild it without a website or database.</p></div>
+ <div class="settings-card"><h3>Data management</h3><div class="actions"><button class="secondary-btn" onclick="exportBackup()">Export backup</button><button class="secondary-btn" onclick="resetData()">Reset demo data</button></div></div>
 </section>
 </main>
 </div>
 
-<div class="modal-backdrop" id="checkoutModal">
-  <div class="modal">
-    <div class="modal-header">
-      <h2>Mock Checkout</h2>
-      <button class="close-btn" onclick="closeModal('checkoutModal')">×</button>
-    </div>
-    <div class="checkout-summary" id="checkoutSummary"></div>
-    <div class="field">
-      <label>Customer Name</label>
-      <input id="customerName" placeholder="Walk-in Customer">
-    </div>
-    <div class="field">
-      <label>Payment Method</label>
-      <select id="paymentMethod" onchange="updatePaymentFields()">
-        <option value="Cash">Cash</option>
-        <option value="GCash (Mock)">GCash (Mock)</option>
-        <option value="Card (Mock)">Card (Mock)</option>
-        <option value="Bank Transfer (Mock)">Bank Transfer (Mock)</option>
-      </select>
-    </div>
-    <div class="field" id="cashField">
-      <label>Cash Received (PHP)</label>
-      <input type="number" id="cashReceived" placeholder="Enter amount" min="0" step="0.01" oninput="updateChange()">
-    </div>
-    <div class="change-display" id="changeDisplay">Change: ₱0.00</div>
-    <p class="notice">This is a simulated transaction. No money will be collected or transferred.</p>
-    <button class="full-btn" onclick="completeTransaction()">COMPLETE MOCK TRANSACTION</button>
-  </div>
-</div>
+<button class="fab" id="fab" onclick="toggleCart(true)">🛒 <span id="fabTxt">View order</span></button>
+<div class="bnav" id="bnav"></div>
 
-<div class="modal-backdrop" id="receiptModal">
-  <div class="modal">
-    <div class="modal-header">
-      <h2>Generated Receipt</h2>
-      <button class="close-btn" onclick="closeModal('receiptModal')">×</button>
-    </div>
-    <div id="receiptContent"></div>
-    <div class="modal-actions">
-      <button class="secondary-btn" onclick="downloadReceipt(currentReceipt)">DOWNLOAD TXT</button>
-      <button class="secondary-btn" onclick="downloadReceiptJSON(currentReceipt)">DOWNLOAD JSON</button>
-      <button class="primary-btn" onclick="printReceipt()">PRINT</button>
-    </div>
-  </div>
-</div>
+<div class="mb" id="checkoutModal"><div class="modal">
+ <div class="mh"><h2>Checkout</h2><button class="x" onclick="closeModal('checkoutModal')" aria-label="Close">×</button></div>
+ <div class="cs" id="coSum"></div>
+ <div class="field"><label for="cust">Customer name</label><input id="cust" placeholder="Walk-in customer"></div>
+ <div class="field"><label for="pm">Payment method</label><select id="pm" onchange="payUI()"><option>Cash</option><option>GCash (Mock)</option><option>Card (Mock)</option><option>Bank Transfer (Mock)</option></select></div>
+ <div class="field" id="cashField"><label for="cash">Cash received (PHP)</label><input type="number" id="cash" min="0" step="0.01" placeholder="Enter amount" oninput="updChange()"><div class="quick" id="quick"></div></div>
+ <div class="change" id="chg">Change: ₱0.00</div>
+ <p class="notice">This is a simulated transaction. No money is collected or transferred.</p>
+ <button class="full-btn" id="payBtn" onclick="completeSale()">Complete mock transaction</button>
+</div></div>
 
-<div class="modal-backdrop" id="scannerModal">
-  <div class="modal">
-    <div class="modal-header">
-      <h2>Receipt QR Scanner</h2>
-      <button class="close-btn" onclick="closeModal('scannerModal')">×</button>
-    </div>
-    <video id="scannerVideo" class="scanner-video" playsinline></video>
-    <p class="notice" id="scannerStatus">Start the camera to scan a RoboLearn receipt QR code.</p>
-    <button class="full-btn" id="startScannerBtn" onclick="startScanner()">START CAMERA</button>
-    <div class="field" style="margin-top:18px">
-      <label>OR PASTE QR RECEIPT DATA</label>
-      <input id="manualQR" placeholder="Paste encoded receipt data">
-    </div>
-    <button class="secondary-btn" style="width:100%" onclick="decodeManualQR()">RECONSTRUCT RECEIPT</button>
-  </div>
-</div>
+<div class="mb" id="receiptModal"><div class="modal">
+ <div class="mh"><h2>Receipt</h2><button class="x" onclick="closeModal('receiptModal')" aria-label="Close">×</button></div>
+ <div id="rcBody"></div>
+ <div class="macts"><button class="secondary-btn" onclick="dlTxt()">Download TXT</button><button class="secondary-btn" onclick="dlJson()">Download JSON</button><button class="primary-btn" onclick="window.print()">Print</button></div>
+</div></div>
 
-<!-- WHAT'S INCLUDED MODAL -->
-<div class="modal-backdrop" id="includedModal">
-  <div class="modal">
-    <div class="modal-header">
-      <h2 id="includedTitle">What's Included</h2>
-      <button class="close-btn" onclick="closeModal('includedModal')">×</button>
-    </div>
-    <div id="includedContent"></div>
-    <button class="full-btn" style="margin-top:20px" onclick="closeModal('includedModal')">GOT IT</button>
-  </div>
-</div>
+<div class="mb" id="scanModal"><div class="modal">
+ <div class="mh"><h2>Scan receipt QR</h2><button class="x" onclick="closeModal('scanModal')" aria-label="Close">×</button></div>
+ <video id="vid" playsinline muted></video>
+ <p class="notice" id="scanStatus">Start the camera and point it at a RoboLearn receipt QR code.</p>
+ <button class="full-btn" onclick="startScan()" style="margin-top:0">Start camera</button>
+ <div class="field" style="margin-top:16px"><label for="manual">Or paste receipt data</label><input id="manual" placeholder="Paste encoded receipt data"></div>
+ <button class="secondary-btn" style="width:100%" onclick="manualDecode()">Rebuild receipt</button>
+</div></div>
+
+<div class="mb" id="incModal"><div class="modal">
+ <div class="mh"><h2 id="incTitle"></h2><button class="x" onclick="closeModal('incModal')" aria-label="Close">×</button></div>
+ <div id="incBody"></div>
+ <button class="full-btn" id="incAdd">Add to order</button>
+</div></div>
+<div class="toast" id="toast"></div>
 
 <script>
-// @ts-check
-/* =========================================================
-   ROBOLEARN POS — SIMULATION ENGINE
-   v1.1.0 (Expanded Catalog + Included Modal)
-========================================================= */
-
-/**
- * @typedef {Object} Product
- * @property {number} id
- * @property {string} name
- * @property {string} category
- * @property {string} description
- * @property {number} price
- * @property {number} stock
- * @property {string} icon
- * @property {string[]} included
- */
-
-/**
- * @typedef {Object} CartItem
- * @property {number} id
- * @property {string} name
- * @property {string} category
- * @property {string} description
- * @property {number} price
- * @property {number} stock
- * @property {string} icon
- * @property {number} quantity
- */
-
-/**
- * @typedef {Object} ReceiptItem
- * @property {number} id
- * @property {string} name
- * @property {number} quantity
- * @property {number} price
- * @property {number} lineTotal
- */
-
-/**
- * @typedef {Object} Receipt
- * @property {string} id
- * @property {string} date
- * @property {string} customer
- * @property {string} method
- * @property {ReceiptItem[]} items
- * @property {number} subtotal
- * @property {number} total
- * @property {number} cashReceived
- * @property {number} change
- * @property {boolean} simulation
- */
-
-const STORAGE_KEY = "robolearn_pos_v1";
-
-/** @type {Product[]} */
-const initialProducts = [
-  // --- Existing Products ---
-  { 
-    id:1, name:"Robotics Starter Kit", category:"EDUCATIONAL KIT", description:"Beginner electronics package", 
-    price:1499, stock:20, icon:"robot",
-    included: [
-      "1x Microcontroller Board (Arduino-compatible)",
-      "1x USB Cable",
-      "1x Breadboard (400 tie-point)",
-      "20x Jumper Wires (Male-to-Male)",
-      "1x LED Pack (Red, Green, Blue)",
-      "1x Resistor Pack (220Ω, 10kΩ)",
-      "1x Ultrasonic Sensor",
-      "1x Servo Motor (SG90)",
-      "1x Plastic Chassis Platform",
-      "1x Learning Guide (Printed)"
-    ]
-  },
-  { 
-    id:2, name:"Arduino Learning Set", category:"MICROCONTROLLER", description:"Microcontroller learning kit", 
-    price:899, stock:15, icon:"chip",
-    included: [
-      "1x Arduino Uno R3 Board",
-      "1x USB Type-B Cable",
-      "1x Breadboard (830 tie-point)",
-      "65x Jumper Wires (Assorted)",
-      "1x LED Assortment (30 pcs)",
-      "1x Push Button Pack (5 pcs)",
-      "1x Potentiometer (10kΩ)",
-      "1x Buzzer Module",
-      "1x Temperature Sensor (LM35)",
-      "1x Project Booklet with 15 experiments"
-    ]
-  },
-  { 
-    id:3, name:"Sensor Module Pack", category:"ELECTRONICS", description:"Multi-sensor educational kit", 
-    price:499, stock:30, icon:"sensor",
-    included: [
-      "1x IR Obstacle Avoidance Sensor",
-      "1x Line Tracking Sensor",
-      "1x Sound Detection Sensor",
-      "1x Vibration Sensor",
-      "1x Tilt Sensor (SW-520D)",
-      "1x Flame Sensor",
-      "1x Light Dependent Resistor (LDR) Module",
-      "10x Female-to-Male Jumper Wires",
-      "1x Quick Reference Card"
-    ]
-  },
-  { 
-    id:4, name:"Motor Driver Module", category:"ELECTRONICS", description:"DC motor control module", 
-    price:299, stock:25, icon:"motor",
-    included: [
-      "1x L298N Dual H-Bridge Motor Driver",
-      "1x Heat Sink",
-      "4x Screw Terminals",
-      "1x Datasheet & Wiring Guide",
-      "4x Jumper Wires for logic connections"
-    ]
-  },
-  { 
-    id:5, name:"Robot Chassis", category:"ROBOT PLATFORM", description:"Mobile robot platform", 
-    price:650, stock:12, icon:"chassis",
-    included: [
-      "1x Acrylic Chassis Plate (2 layers)",
-      "2x DC Gear Motors (TT Motor)",
-      "2x Rubber Wheels (65mm)",
-      "1x Ball Caster (Front support)",
-      "1x Battery Holder (4x AA)",
-      "1x Screw & Nut Pack",
-      "1x Assembly Instructions"
-    ]
-  },
-  { 
-    id:6, name:"Electronics Workbook", category:"LEARNING MATERIAL", description:"Practical learning material", 
-    price:199, stock:40, icon:"book",
-    included: [
-      "1x Printed Workbook (120 pages)",
-      "Covers: Basic circuits, Ohm's law, Breadboarding, Microcontroller intro",
-      "Includes 10 step-by-step projects",
-      "Troubleshooting section",
-      "Glossary of terms"
-    ]
-  },
-  // --- NEW PRODUCTS ---
-  {
-    id:7, name:"Line Tracing Kit Basic", category:"COMPETITION KIT", description:"Entry-level line following robot kit", 
-    price:2499, stock:18, icon:"box",
-    included: [
-      "1x Line Tracing Chassis (Acrylic)",
-      "2x DC Gear Motors with Wheels",
-      "1x Line Tracking Sensor Array (3-channel)",
-      "1x Motor Driver Board",
-      "1x Microcontroller Board (pre-flashed with basic line following code)",
-      "1x Battery Pack (4x AA) with Switch",
-      "1x USB Programming Cable",
-      "1x Calibration Guide & Track Setup Instructions"
-    ]
-  },
-  {
-    id:8, name:"Line Tracing Kit Advanced", category:"COMPETITION KIT", description:"High-performance line following robot kit", 
-    price:3999, stock:10, icon:"box",
-    included: [
-      "1x Lightweight Aluminum Chassis",
-      "2x High-Speed Coreless Motors",
-      "1x 5-Channel Precision Line Sensor Array",
-      "1x Advanced Motor Driver (with PWM tuning)",
-      "1x Programmable Microcontroller (Arduino-compatible)",
-      "1x Lithium Battery Pack & Charger",
-      "1x PID Tuning Software & Guide",
-      "1x Competition Track Mat (Practice)"
-    ]
-  },
-  {
-    id:9, name:"Sumobot Kit Basic", category:"COMPETITION KIT", description:"Entry-level sumo robot kit", 
-    price:2999, stock:15, icon:"box",
-    included: [
-      "1x Sumo Chassis (Wood/Acrylic)",
-      "2x High-Torque DC Motors",
-      "2x Silicone Competition Tires",
-      "1x IR Edge Detection Sensor (2 pcs)",
-      "1x Ultrasonic Opponent Sensor",
-      "1x Motor Driver Board",
-      "1x Microcontroller (pre-loaded with sumo logic)",
-      "1x Battery Pack (9V or 4x AA)",
-      "1x Push Button (Start)",
-      "1x Building & Strategy Manual"
-    ]
-  },
-  {
-    id:10, name:"Sumobot Kit Advanced", category:"COMPETITION KIT", description:"Competition-grade sumo robot kit", 
-    price:4999, stock:8, icon:"box",
-    included: [
-      "1x Precision-Machined Aluminum Chassis",
-      "2x High-Speed Brushless Motors with ESCs",
-      "2x Custom Silicone Tires (High Grip)",
-      "1x Advanced IR Edge Detection Array (4 sensors)",
-      "1x Sharp Distance Sensor (Opponent detection)",
-      "1x Programmable Microcontroller (Arduino/ESP32)",
-      "1x High-Capacity LiPo Battery & Balance Charger",
-      "1x Aluminum Scoop/Blade",
-      "1x Advanced Programming Guide (with autonomous strategies)"
-    ]
-  },
-  {
-    id:11, name:"Competition Kit (Mega Bundle)", category:"BUNDLE", description:"All four competition kits in one package", 
-    price:12999, stock:5, icon:"box",
-    included: [
-      "1x Line Tracing Kit Basic (ID: 7)",
-      "1x Line Tracing Kit Advanced (ID: 8)",
-      "1x Sumobot Kit Basic (ID: 9)",
-      "1x Sumobot Kit Advanced (ID: 10)",
-      "1x Competition Rulebook",
-      "1x Carrying Case for all components",
-      "1x 2-hour Virtual Coaching Session"
-    ]
-  },
-  {
-    id:12, name:"Basic Edukit", category:"EDUCATIONAL KIT", description:"Foundational STEM robotics kit", 
-    price:1999, stock:25, icon:"box",
-    included: [
-      "1x Microcontroller Board (Arduino-compatible)",
-      "1x Mini Breadboard",
-      "1x LED & Resistor Pack",
-      "1x Push Button",
-      "1x Buzzer",
-      "1x Light Sensor (LDR)",
-      "1x Temperature Sensor",
-      "10x Jumper Wires",
-      "1x Project Guide (5 basic experiments)"
-    ]
-  },
-  {
-    id:13, name:"Advance Edukit", category:"EDUCATIONAL KIT", description:"Intermediate robotics & sensor kit", 
-    price:3499, stock:15, icon:"box",
-    included: [
-      "1x Advanced Microcontroller Board",
-      "1x Full-size Breadboard",
-      "1x Sensor Pack (Ultrasonic, IR, Sound, Tilt)",
-      "1x Servo Motor",
-      "1x LCD Display (16x2)",
-      "1x Motor Driver",
-      "1x DC Motor (for demonstrations)",
-      "30x Jumper Wires",
-      "1x Project Guide (10 intermediate experiments)"
-    ]
-  },
-  {
-    id:14, name:"Combo Edukit", category:"BUNDLE", description:"Basic + Advance kits together", 
-    price:4999, stock:10, icon:"box",
-    included: [
-      "1x Basic Edukit (ID: 12)",
-      "1x Advance Edukit (ID: 13)",
-      "1x Storage Box",
-      "1x Combined Project Guide (15 experiments)"
-    ]
-  },
-  {
-    id:15, name:"School Edukit (5 Kits)", category:"CLASSROOM BUNDLE", description:"5 complete kits for classroom use", 
-    price:14999, stock:6, icon:"box",
-    included: [
-      "5x Basic Edukit (ID: 12)",
-      "5x Advance Edukit (ID: 13)",
-      "1x Teacher's Manual & Curriculum Guide",
-      "1x Classroom Storage Rack",
-      "1x Spare Parts Kit (extra sensors, wires, LEDs)",
-      "1x Setup & Maintenance Guide"
-    ]
-  }
-];
-
-/** @type {Record<string, string>} */
-const illustrations = {
-  robot:`<rect x="7" y="7" width="34" height="34" rx="5"/><circle cx="17" cy="20" r="3"/><circle cx="31" cy="20" r="3"/><path d="M17 31h14M24 7V2M18 42v5M30 42v5"/>`,
-  chip:`<rect x="10" y="10" width="28" height="28" rx="3"/><rect x="17" y="17" width="14" height="14"/><path d="M15 3v7M23 3v7M31 3v7M15 38v7M23 38v7M31 38v7M3 15h7M3 23h7M3 31h7M38 15h7M38 23h7M38 31h7"/>`,
-  sensor:`<circle cx="24" cy="24" r="16"/><circle cx="24" cy="24" r="7"/><path d="M24 1v7M24 40v7M1 24h7M40 24h7"/>`,
-  motor:`<rect x="9" y="12" width="30" height="24" rx="5"/><path d="M39 19h5v10h-5M9 19H4v10h5M17 19h14M17 29h14"/>`,
-  chassis:`<rect x="9" y="12" width="30" height="25" rx="4"/><circle cx="7" cy="17" r="4"/><circle cx="41" cy="17" r="4"/><circle cx="7" cy="33" r="4"/><circle cx="41" cy="33" r="4"/><path d="M17 20h14v9H17z"/>`,
-  book:`<path d="M24 10C17 5 9 7 5 10v29c7-4 13-2 19 2z"/><path d="M24 10c7-5 15-3 19 0v29c-7-4-13-2-19 2z"/><path d="M11 17h8M11 23h8M29 17h8M29 23h8"/>`,
-  box:`<rect x="8" y="14" width="32" height="24" rx="2"/><path d="M8 20h32M24 14V6M16 6h16M16 38v4M32 38v4"/>`
-};
-
-// Safe fallback for structuredClone (fixes older mobile browser crashes)
-function cloneData(obj) {
-  if (typeof structuredClone === "function") return structuredClone(obj);
-  return JSON.parse(JSON.stringify(obj));
-}
-
-/**
- * @param {string} key
- * @param {any} fallback
- * @returns {any}
- */
-function loadData(key, fallback) {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY + "_" + key);
-    return stored ? JSON.parse(stored) : cloneData(fallback);
-  } catch {
-    return cloneData(fallback);
-  }
-}
-
-/** @type {Product[]} */
-let products = loadData("products", initialProducts);
-/** @type {Receipt[]} */
-let transactions = loadData("transactions", []);
-/** @type {Receipt[]} */
-let receipts = loadData("receipts", []);
-/** @type {CartItem[]} */
-let cart = [];
-/** @type {Receipt|null} */
-let currentReceipt = null;
-/** @type {MediaStream|null} */
-let scannerStream = null;
-/** @type {ReturnType<typeof setInterval>|null} */
-let scanInterval = null;
-/** @type {any} */
-let qrDetector = null;
-
-function saveData() {
-  localStorage.setItem(STORAGE_KEY + "_products", JSON.stringify(products));
-  localStorage.setItem(STORAGE_KEY + "_transactions", JSON.stringify(transactions));
-  localStorage.setItem(STORAGE_KEY + "_receipts", JSON.stringify(receipts));
-}
-
-/**
- * @param {number} value
- * @returns {string}
- */
-function money(value) {
-  return "₱" + Number(value || 0).toLocaleString("en-PH", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  });
-}
-
-/**
- * @param {any} value
- * @returns {string}
- */
-function escapeHTML(value) {
-  return String(value ?? "").replace(/[&<>"']/g, (c) => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-  })[c] || c);
-}
-
-function openIncludedModal(productId) {
-  const product = products.find(p => p.id === productId);
-  if (!product) return;
-  
-  const titleEl = document.getElementById("includedTitle");
-  const contentEl = document.getElementById("includedContent");
-  if (!titleEl || !contentEl) return;
-  
-  titleEl.textContent = product.name + " — What's Included";
-  
-  if (product.included && product.included.length > 0) {
-    contentEl.innerHTML = `<ul class="included-list">${product.included.map(item => `<li>${escapeHTML(item)}</li>`).join("")}</ul>`;
-  } else {
-    contentEl.innerHTML = `<p class="notice">No itemized contents listed for this product.</p>`;
-  }
-  
-  openModal("includedModal");
-}
-
-function renderProducts() {
-  const container = document.getElementById("products");
-  if (!container) return;
-  container.innerHTML = products.map((/** @type {Product} */ p) => {
-    const inCart = cart.find((/** @type {CartItem} */ c) => c.id === p.id)?.quantity || 0;
-    const out = p.stock - inCart <= 0;
-    return `
-      <article class="product" onclick="openIncludedModal(${p.id})">
-        <div class="product-art">
-          <svg viewBox="0 0 48 48">${illustrations[p.icon] || illustrations.box}</svg>
-        </div>
-        <div class="product-category">${escapeHTML(p.category)}</div>
-        <h3 class="product-name">${escapeHTML(p.name)}</h3>
-        <p class="product-description">${escapeHTML(p.description)}</p>
-        <div class="product-bottom" onclick="event.stopPropagation()">
-          <span class="product-price">${money(p.price)}</span>
-          <button class="primary-btn" onclick="addToCart(${p.id})" ${out ? "disabled" : ""}>
-            ${out ? "OUT OF STOCK" : "ADD"}
-          </button>
-        </div>
-      </article>`;
-  }).join("");
-}
-
-/** @param {number} id */
-function addToCart(id) {
-  const product = products.find((/** @type {Product} */ p) => p.id === id);
-  if (!product) return;
-
-  const existing = cart.find((/** @type {CartItem} */ item) => item.id === id);
-  const inCartQty = existing ? existing.quantity : 0;
-
-  if (inCartQty >= product.stock) {
-    alert("No more stock available for " + product.name);
-    return;
-  }
-
-  if (existing) {
-    existing.quantity++;
-  } else {
-    cart.push({ ...product, quantity: 1 });
-  }
-
-  renderCart();
-  renderProducts();
-}
-
-/** @param {number} id */
-function removeFromCart(id) {
-  cart = cart.filter((/** @type {CartItem} */ item) => item.id !== id);
-  renderCart();
-  renderProducts();
-}
-
-function renderCart() {
-  const container = document.getElementById("cartItems");
-  if (!container) return;
-
-  if (!cart.length) {
-    container.innerHTML = '<div class="empty">No items have been added.</div>';
-  } else {
-    container.innerHTML = cart.map((/** @type {CartItem} */ item) => `
-      <div class="cart-item">
-        <div>
-          <strong>${escapeHTML(item.name)}</strong>
-          <small>${item.quantity} × ${money(item.price)}</small>
-        </div>
-        <div class="cart-item-right">
-          ${money(item.price * item.quantity)}
-          <button class="remove-btn" onclick="removeFromCart(${item.id})">REMOVE</button>
-        </div>
-      </div>`).join("");
-  }
-
-  const count = cart.reduce((/** @type {number} */ s, /** @type {CartItem} */ i) => s + i.quantity, 0);
-  const total = getCartTotal();
-  
-  const itemCountEl = document.getElementById("itemCount");
-  if (itemCountEl) itemCountEl.textContent = count + (count === 1 ? " ITEM" : " ITEMS");
-  
-  const subtotalEl = document.getElementById("subtotal");
-  if (subtotalEl) subtotalEl.textContent = money(total);
-  
-  const totalEl = document.getElementById("total");
-  if (totalEl) totalEl.textContent = money(total);
-}
-
-/** @returns {number} */
-function getCartTotal() {
-  return cart.reduce((/** @type {number} */ s, /** @type {CartItem} */ i) => s + i.price * i.quantity, 0);
-}
-
-function openCheckout() {
-  if (!cart.length) { alert("Your cart is empty."); return; }
-
-  for (const item of cart) {
-    const p = products.find((/** @type {Product} */ x) => x.id === item.id);
-    if (!p || item.quantity > p.stock) {
-      alert(`${item.name} no longer has enough stock. Please adjust your cart.`);
-      return;
-    }
-  }
-
-  const total = getCartTotal();
-  const summary = document.getElementById("checkoutSummary");
-  if (summary) {
-    summary.innerHTML = `
-      <div><span>Products</span><span>${cart.length} types</span></div>
-      <div><span>Items</span><span>${cart.reduce((/** @type {number} */ s, /** @type {CartItem} */ i) => s + i.quantity, 0)}</span></div>
-      <div><span>Subtotal</span><span>${money(total)}</span></div>
-      <div><span>Total</span><span>${money(total)}</span></div>`;
-  }
-
-  const nameInput = /** @type {HTMLInputElement} */ (document.getElementById("customerName"));
-  if (nameInput) nameInput.value = "";
-  
-  const methodSelect = /** @type {HTMLSelectElement} */ (document.getElementById("paymentMethod"));
-  if (methodSelect) methodSelect.value = "Cash";
-  
-  const cashInput = /** @type {HTMLInputElement} */ (document.getElementById("cashReceived"));
-  if (cashInput) cashInput.value = "";
-
-  updatePaymentFields();
-  openModal("checkoutModal");
-}
-
-function updatePaymentFields() {
-  const methodSelect = /** @type {HTMLSelectElement} */ (document.getElementById("paymentMethod"));
-  if (!methodSelect) return;
-  
-  const isCash = methodSelect.value === "Cash";
-  const cashField = document.getElementById("cashField");
-  if (cashField) cashField.style.display = isCash ? "block" : "none";
-  
-  const changeDisplay = document.getElementById("changeDisplay");
-  if (changeDisplay) {
-    changeDisplay.textContent = isCash ? "Change: ₱0.00" : "Payment simulated — no cash received.";
-  }
-}
-
-function updateChange() {
-  const methodSelect = /** @type {HTMLSelectElement} */ (document.getElementById("paymentMethod"));
-  if (!methodSelect || methodSelect.value !== "Cash") return;
-
-  const cashInput = /** @type {HTMLInputElement} */ (document.getElementById("cashReceived"));
-  if (!cashInput) return;
-
-  const cash = Number(cashInput.value);
-  const total = getCartTotal();
-  const change = cash - total;
-  const display = document.getElementById("changeDisplay");
-  
-  if (display) {
-    if (!Number.isFinite(cash) || cash === 0) {
-      display.textContent = "Change: ₱0.00";
-    } else if (change >= 0) {
-      display.textContent = "Change: " + money(change);
-    } else {
-      display.textContent = "Remaining payment: " + money(Math.abs(change));
-    }
-  }
-}
-
-function completeTransaction() {
-  if (!cart.length) return;
-
-  const methodSelect = /** @type {HTMLSelectElement} */ (document.getElementById("paymentMethod"));
-  const method = methodSelect ? methodSelect.value : "Cash";
-  
-  const nameInput = /** @type {HTMLInputElement} */ (document.getElementById("customerName"));
-  const customer = (nameInput ? nameInput.value.trim() : "") || "Walk-in Customer";
-  
-  const total = getCartTotal();
-  let cash = total, change = 0;
-
-  if (method === "Cash") {
-    const cashInput = /** @type {HTMLInputElement} */ (document.getElementById("cashReceived"));
-    cash = cashInput ? Number(cashInput.value) : 0;
-    if (!Number.isFinite(cash) || cash < total) {
-      alert("Insufficient mock payment. Please enter an amount equal to or greater than the total.");
-      return;
-    }
-    change = cash - total;
-  }
-
-  for (const item of cart) {
-    const p = products.find((/** @type {Product} */ x) => x.id === item.id);
-    if (p) p.stock = Math.max(0, p.stock - item.quantity);
-  }
-
-  const now = new Date();
-  const id = "RL-" + now.getFullYear() + "-" + String(Date.now()).slice(-8);
-
-  /** @type {Receipt} */
-  const receipt = {
-    id,
-    date: now.toISOString(),
-    customer,
-    method,
-    items: cart.map((/** @type {CartItem} */ i) => ({
-      id: i.id, name: i.name,
-      quantity: i.quantity, price: i.price,
-      lineTotal: i.price * i.quantity
-    })),
-    subtotal: total, total,
-    cashReceived: cash, change,
-    simulation: true
-  };
-
-  transactions.unshift(receipt);
-  receipts.unshift(receipt);
-  cart = [];
-
-  saveData();
-  renderProducts();
-  renderCart();
-  renderInventory();
-  renderTransactions();
-  renderReceipts();
-
-  closeModal("checkoutModal");
-  showReceipt(receipt);
-}
-
-/** @param {Receipt} r @returns {string} */
-function receiptText(r) {
-  const line = "--------------------------------";
-  let text = `
-             ROBOLEARN
-       ROBOTICS SOLUTIONS
-          POINT OF SALE
-
-          SALES RECEIPT
-${line}
-Receipt: ${r.id}
-Date: ${new Date(r.date).toLocaleString("en-PH")}
-Customer: ${r.customer || "Walk-in Customer"}
-Payment: ${r.method}
-${line}
-`;
-  r.items.forEach((/** @type {ReceiptItem} */ item) => {
-    text += `${item.name}\n${item.quantity} x ${money(item.price)} = ${money(item.lineTotal)}\n\n`;
-  });
-  text += `${line}
-Subtotal:       ${money(r.subtotal)}
-TOTAL:          ${money(r.total)}
-Cash received:  ${money(r.cashReceived)}
-Change:         ${money(r.change)}
-${line}
-
-SIMULATION ONLY
-NOT A VALID PROOF OF PURCHASE
-
-Thank you for visiting RoboLearn.
-`;
-  return text.trim();
-}
-
-/** @param {Receipt} r @returns {string} */
-function encodeReceipt(r) {
-  const bytes = new TextEncoder().encode(JSON.stringify(r));
-  let binary = "";
-  bytes.forEach((/** @type {number} */ b) => { binary += String.fromCharCode(b); });
-  return "ROBOLEARN:" + btoa(binary)
-    .replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
-}
-
-/** @param {string} data @returns {Receipt} */
-function decodeReceipt(data) {
-  if (!data.startsWith("ROBOLEARN:"))
-    throw new Error("This is not a RoboLearn receipt QR code.");
-  let base64 = data.substring(10).replace(/-/g,"+").replace(/_/g,"/");
-  base64 += "=".repeat((4 - base64.length % 4) % 4);
-  const binary = atob(base64);
-  const bytes = Uint8Array.from(binary, (/** @type {string} */ c) => c.charCodeAt(0));
-  const receipt = JSON.parse(new TextDecoder().decode(bytes));
-
-  if (!receipt.id || !Array.isArray(receipt.items) || receipt.simulation !== true) {
-    throw new Error("Invalid receipt data.");
-  }
-  return receipt;
-}
-
-/** @param {Receipt} receipt */
-function showReceipt(receipt) {
-  currentReceipt = receipt;
-  const qrData = encodeReceipt(receipt);
-
-  const content = document.getElementById("receiptContent");
-  if (!content) return;
-
-  content.innerHTML = `
-    <div class="receipt-paper" id="receiptPaper">
-      <div class="receipt-center">
-        <div class="receipt-brand">ROBOLEARN</div>
-        <div class="receipt-small">ROBOTICS SOLUTIONS</div>
-        <div class="receipt-small">POINT OF SALE</div>
-        <div style="font-weight:bold;margin-top:12px">SALES RECEIPT</div>
-      </div>
-      <div class="receipt-warning">SIMULATION ONLY — NOT A VALID PROOF OF PURCHASE</div>
-      <div class="receipt-rule"></div>
-      <div class="receipt-small">
-        Receipt: ${escapeHTML(receipt.id)}<br>
-        Date: ${escapeHTML(new Date(receipt.date).toLocaleString("en-PH"))}<br>
-        Customer: ${escapeHTML(receipt.customer || "Walk-in Customer")}<br>
-        Payment: ${escapeHTML(receipt.method)}
-      </div>
-      <div class="receipt-rule"></div>
-      ${receipt.items.map((/** @type {ReceiptItem} */ item) => `
-        <div class="receipt-small" style="margin:9px 0">${escapeHTML(item.name)}</div>
-        <div class="receipt-line">
-          <span>${item.quantity} × ${money(item.price)}</span>
-          <span>${money(item.lineTotal)}</span>
-        </div>`).join("")}
-      <div class="receipt-rule"></div>
-      <div class="receipt-line"><span>Subtotal</span><span>${money(receipt.subtotal)}</span></div>
-      <div class="receipt-line receipt-total"><span>TOTAL</span><span>${money(receipt.total)}</span></div>
-      <div class="receipt-line"><span>Cash received</span><span>${money(receipt.cashReceived)}</span></div>
-      <div class="receipt-line"><span>Change</span><span>${money(receipt.change)}</span></div>
-      <div class="receipt-rule"></div>
-      <div class="receipt-center">
-        <div class="receipt-small">SCAN TO RECONSTRUCT RECEIPT</div>
-        <div class="qr-holder" id="receiptQR"></div>
-        <div class="receipt-small">Thank you for visiting RoboLearn.</div>
-        <div class="receipt-small">DEMONSTRATION TRANSACTION</div>
-      </div>
-    </div>`;
-
-  openModal("receiptModal");
-
-  const qrContainer = document.getElementById("receiptQR");
-  if (!qrContainer) return;
-
-  qrContainer.innerHTML = "";
-
-  // @ts-ignore
-  if (typeof QRCode === "undefined") {
-    qrContainer.innerHTML = '<div class="qr-error">QR library unavailable. Check your internet connection.</div>';
-    return;
-  }
-  try {
-    // @ts-ignore
-    new QRCode(qrContainer, {
-      text: qrData, width: 145, height: 145,
-      colorDark: "#14243a", colorLight: "#ffffff",
-      // @ts-ignore
-      correctLevel: QRCode.CorrectLevel.L
-    });
-  } catch {
-    qrContainer.innerHTML = '<div class="qr-error">QR too large for this receipt — download JSON instead.</div>';
-  }
-}
-
-/** @param {Receipt|null} receipt */
-function downloadReceipt(receipt) {
-  if (!receipt) return;
-  const blob = new Blob([receiptText(receipt)], { type: "text/plain" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = receipt.id + ".txt";
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
-/** @param {Receipt|null} receipt */
-function downloadReceiptJSON(receipt) {
-  if (!receipt) return;
-  const blob = new Blob([JSON.stringify(receipt, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = receipt.id + ".json";
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
-function printReceipt() {
-  const content = document.getElementById("receiptPaper");
-  if (!content) return;
-  const win = window.open("", "_blank");
-  if (!win) {
-    alert("Printing was blocked by your browser. Try downloading the receipt instead.");
-    return;
-  }
-  
-  const doc = win.document;
-  doc.open();
-  doc.write('<!DOCTYPE html><html><head><title>RoboLearn Receipt</title>');
-  doc.write('<style>body{font-family:monospace;padding:15px}.receipt-paper{max-width:340px;margin:auto}.receipt-center{text-align:center}.receipt-brand{font-size:22px;font-weight:bold}.receipt-small{font-size:11px;line-height:1.7}.receipt-rule{border-top:1px dashed #555;margin:12px 0}.receipt-line{display:flex;justify-content:space-between;font-size:11px;margin:7px 0}.receipt-total{font-weight:bold;font-size:14px}.receipt-warning{border:1px solid #777;padding:7px;text-align:center;font-size:9px;margin:12px 0}.qr-holder{display:flex;justify-content:center;padding:12px}img{max-width:145px}</style></head><body>');
-  doc.write(content.innerHTML);
-  doc.write('</body></html>');
-  doc.close();
-  
-  win.focus();
-  setTimeout(() => {
-    win.print();
-    win.close();
-  }, 500);
-}
-
-function renderReceipts() {
-  const searchInput = /** @type {HTMLInputElement} */ (document.getElementById("receiptSearch"));
-  const search = (searchInput ? searchInput.value : "").toLowerCase();
-  
-  const filtered = receipts.filter((/** @type {Receipt} */ r) =>
-    r.id.toLowerCase().includes(search) ||
-    r.customer.toLowerCase().includes(search)
-  );
-  
-  const countEl = document.getElementById("receiptCount");
-  if (countEl) countEl.textContent = filtered.length + " / " + receipts.length + " RECEIPTS";
-  
-  const list = document.getElementById("receiptList");
-  if (!list) return;
-
-  if (!filtered.length) {
-    list.innerHTML = '<div class="empty">No receipts found.</div>';
-    return;
-  }
-  
-  list.innerHTML = filtered.map((/** @type {Receipt} */ r) => `
-    <div class="receipt-card">
-      <div>
-        <strong>${escapeHTML(r.id)}</strong>
-        <p>${escapeHTML(r.customer || "Walk-in Customer")} · ${escapeHTML(r.method)}</p>
-        <p>${new Date(r.date).toLocaleString("en-PH")}</p>
-        <p><strong>${money(r.total)}</strong> · SIMULATED</p>
-      </div>
-      <div class="card-actions">
-        <button class="secondary-btn" onclick="openArchivedReceipt('${escapeHTML(r.id)}')">VIEW</button>
-        <button class="secondary-btn" onclick="downloadById('${escapeHTML(r.id)}')">DOWNLOAD</button>
-      </div>
-    </div>`).join("");
-}
-
-/** @param {string} id */
-function openArchivedReceipt(id) {
-  const receipt = receipts.find((/** @type {Receipt} */ r) => r.id === id);
-  if (receipt) showReceipt(receipt);
-}
-
-/** @param {string} id */
-function downloadById(id) {
-  const receipt = receipts.find((/** @type {Receipt} */ r) => r.id === id);
-  if (receipt) downloadReceipt(receipt);
-}
-
-function renderTransactions() {
-  const countEl = document.getElementById("transactionCount");
-  if (countEl) countEl.textContent = transactions.length + " RECORDS";
-  
-  const list = document.getElementById("transactionList");
-  if (!list) return;
-
-  if (!transactions.length) {
-    list.innerHTML = '<div class="empty">No transactions recorded.</div>';
-    return;
-  }
-  
-  list.innerHTML = transactions.map((/** @type {Receipt} */ r) => `
-    <div class="receipt-card">
-      <div>
-        <strong>${escapeHTML(r.id)}</strong>
-        <p>${escapeHTML(r.customer || "Walk-in Customer")} · ${escapeHTML(r.method)}</p>
-        <p>${new Date(r.date).toLocaleString("en-PH")}</p>
-      </div>
-      <strong>${money(r.total)}</strong>
-    </div>`).join("");
-}
-
-function renderInventory() {
-  const searchInput = /** @type {HTMLInputElement} */ (document.getElementById("inventorySearch"));
-  const search = (searchInput ? searchInput.value : "").toLowerCase();
-  
-  const filtered = products.filter((/** @type {Product} */ p) => p.name.toLowerCase().includes(search));
-  
-  const list = document.getElementById("inventoryList");
-  if (!list) return;
-
-  if (!filtered.length) {
-    list.innerHTML = '<div class="empty">No products match your search.</div>';
-    return;
-  }
-  
-  list.innerHTML = filtered.map((/** @type {Product} */ p) => `
-    <div class="receipt-card">
-      <div>
-        <strong>${escapeHTML(p.name)}</strong>
-        <p>${escapeHTML(p.category)}</p>
-        <p>${money(p.price)} · ${p.stock} units</p>
-      </div>
-      <span class="muted">${p.stock > 0 ? "IN STOCK" : "OUT OF STOCK"}</span>
-    </div>`).join("");
-}
-
-function openScanner() {
-  openModal("scannerModal");
-  const status = document.getElementById("scannerStatus");
-  if (status) status.textContent = "Start the camera to scan a RoboLearn receipt QR code.";
-}
-
-async function startScanner() {
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    alert("Camera access is unavailable. Try a supported browser over HTTPS or localhost.");
-    return;
-  }
-  // @ts-ignore
-  if (!("BarcodeDetector" in window)) {
-    const status = document.getElementById("scannerStatus");
-    if (status) status.textContent = "This browser does not support built-in QR detection. You can paste the QR data below.";
-    return;
-  }
-  try {
-    // @ts-ignore
-    qrDetector = new window.BarcodeDetector({ formats: ["qr_code"] });
-    scannerStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: "environment" } }, audio: false
-    });
-    const video = /** @type {HTMLVideoElement} */ (document.getElementById("scannerVideo"));
-    if (video) {
-      video.srcObject = scannerStream;
-      await video.play();
-    }
-    const status = document.getElementById("scannerStatus");
-    if (status) status.textContent = "Camera active. Point it at a RoboLearn receipt QR code.";
-    const btn = document.getElementById("startScannerBtn");
-    if (btn) btn.textContent = "CAMERA ACTIVE";
-    scanInterval = setInterval(scanFrame, 500);
-  } catch (/** @type {any} */ error) {
-    const status = document.getElementById("scannerStatus");
-    if (status) status.textContent = "Camera could not start: " + error.message;
-  }
-}
-
-async function scanFrame() {
-  const video = /** @type {HTMLVideoElement} */ (document.getElementById("scannerVideo"));
-  if (!qrDetector || !video || video.readyState < 2) return;
-  try {
-    const codes = await qrDetector.detect(video);
-    if (codes && codes.length) {
-      stopScanner();
-      closeModal("scannerModal");
-      reconstructReceipt(codes[0].rawValue);
-    }
-  } catch (err) { console.error(err); }
-}
-
-function stopScanner() {
-  if (scanInterval) { clearInterval(scanInterval); scanInterval = null; }
-  if (scannerStream) {
-    scannerStream.getTracks().forEach((/** @type {MediaStreamTrack} */ t) => t.stop());
-    scannerStream = null;
-  }
-  const video = /** @type {HTMLVideoElement} */ (document.getElementById("scannerVideo"));
-  if (video) video.srcObject = null;
-  const btn = document.getElementById("startScannerBtn");
-  if (btn) btn.textContent = "START CAMERA";
-}
-
-function decodeManualQR() {
-  const input = /** @type {HTMLInputElement} */ (document.getElementById("manualQR"));
-  if (!input) return;
-  const value = input.value.trim();
-  if (!value) { alert("Paste the QR receipt data first."); return; }
-  stopScanner();
-  closeModal("scannerModal");
-  reconstructReceipt(value);
-}
-
-/** @param {string} raw */
-function reconstructReceipt(raw) {
-  try {
-    const receipt = decodeReceipt(raw);
-    if (!receipts.some((/** @type {Receipt} */ r) => r.id === receipt.id)) {
-      receipts.unshift(receipt);
-      saveData();
-      renderReceipts();
-    }
-    showReceipt(receipt);
-  } catch (/** @type {any} */ error) {
-    alert("Could not reconstruct receipt: " + error.message);
-  }
-}
-
-/** @type {Record<string, [string,string]>} */
-const pageNames = {
-  pos: ["Point of Sale","Manage simulated sales and transactions."],
-  inventory: ["Inventory","Review available products and stock."],
-  transactions: ["Transactions","View simulated transaction history."],
-  receipts: ["Receipts","View, download and reconstruct receipts."],
-  settings: ["Settings","Manage the local demonstration system."]
-};
-
-document.querySelectorAll(".nav-item").forEach((item) => {
-  item.addEventListener("click", () => {
-    const el = /** @type {HTMLElement} */ (item);
-    const page = el.dataset.page;
-    if (!page) return;
-    
-    document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
-    el.classList.add("active");
-    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-    
-    const pageEl = document.getElementById("page-" + page);
-    if (pageEl) pageEl.classList.add("active");
-    
-    const title = pageNames[page];
-    if (title) {
-      const titleEl = document.getElementById("pageTitle");
-      if (titleEl) titleEl.textContent = title[0];
-      const subEl = document.getElementById("pageSubtitle");
-      if (subEl) subEl.textContent = title[1];
-    }
-    
-    if (page === "inventory") renderInventory();
-    if (page === "transactions") renderTransactions();
-    if (page === "receipts") renderReceipts();
-    if (page === "pos") { renderProducts(); renderCart(); }
-  });
-});
-
-/** @param {string} id */
-function openModal(id) {
-  const el = document.getElementById(id);
-  if (el) el.classList.add("open");
-}
-
-/** @param {string} id */
-function closeModal(id) {
-  const el = document.getElementById(id);
-  if (el) el.classList.remove("open");
-  if (id === "scannerModal") stopScanner();
-}
-
-function exportBackup() {
-  const backup = {
-    application: "RoboLearn POS",
-    version: "1.1.0",
-    exportedAt: new Date().toISOString(),
-    products, transactions, receipts
-  };
-  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "robolearn-backup.json";
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
-function clearDemoData() {
-  if (!confirm("Reset all products, transactions and receipts?")) return;
-  products = cloneData(initialProducts);
-  transactions = [];
-  receipts = [];
-  cart = [];
-  saveData();
-  renderProducts();
-  renderCart();
-  renderInventory();
-  renderTransactions();
-  renderReceipts();
-  alert("Demo data reset to original state.");
-}
-
-/* ---------- Init ---------- */
-renderProducts();
-renderCart();
-renderInventory();
-renderTransactions();
-renderReceipts();
-
-/* ---------- Explicit Window Assignments ---------- */
-window.openIncludedModal = openIncludedModal;
-window.addToCart = addToCart;
-window.removeFromCart = removeFromCart;
-window.openCheckout = openCheckout;
-window.updatePaymentFields = updatePaymentFields;
-window.updateChange = updateChange;
-window.completeTransaction = completeTransaction;
-window.downloadReceipt = downloadReceipt;
-window.downloadReceiptJSON = downloadReceiptJSON;
-window.printReceipt = printReceipt;
-window.openArchivedReceipt = openArchivedReceipt;
-window.downloadById = downloadById;
-window.openScanner = openScanner;
-window.startScanner = startScanner;
-window.decodeManualQR = decodeManualQR;
-window.exportBackup = exportBackup;
-window.clearDemoData = clearDemoData;
-window.closeModal = closeModal;
-window.renderInventory = renderInventory;
-window.renderReceipts = renderReceipts;
-
+const KEY="robolearn_pos_v2";
+const CATS={KIT:["Kits","🧰"],MCU:["Microcontrollers","🔲"],SEN:["Sensors","📡"],LT:["Line tracers","🛤️"],MOT:["Motors & drivers","⚙️"],PLT:["Robot platforms","🤖"],PWR:["Power","🔋"],CMP:["Components","💡"],DSP:["Displays","🖥️"],WLS:["Wireless","📶"],TLS:["Tools","🔧"],BK:["Books","📘"]};
+const RAW=`KIT|Robotics Starter Kit|Beginner electronics package|1499|20|Arduino-compatible board;USB cable;400-point breadboard;20 jumper wires;LED pack;Resistor pack;Ultrasonic sensor;SG90 servo;Plastic chassis;Printed guide
+MCU|Arduino Learning Set|Microcontroller learning kit|899|15|Arduino Uno R3;USB-B cable;830-point breadboard;65 jumper wires;30 LEDs;5 push buttons;10kΩ potentiometer;Buzzer;LM35 sensor;15-experiment booklet
+SEN|Sensor Module Pack|Multi-sensor educational kit|499|30|IR obstacle sensor;Line tracking sensor;Sound sensor;Vibration sensor;Tilt sensor;Flame sensor;LDR module;10 jumper wires;Reference card
+MOT|Motor Driver Module|DC motor control module|299|25|L298N dual H-bridge;Heat sink;4 screw terminals;Wiring guide;4 jumper wires
+PLT|Robot Chassis|Mobile robot platform|650|12|2-layer acrylic plate;2 TT gear motors;2 rubber wheels (65mm);Ball caster;4xAA battery holder;Screw & nut pack;Assembly guide
+BK|Electronics Workbook|Practical learning material|199|40|Printed workbook;Circuit exercises;Answer key
+LT|2-Channel Line Tracer Module|Basic IR line follower|120|40|2 IR sensors;Jumper cables;Mounting screws
+LT|3-Channel Line Tracer Module|Three-point IR tracking|180|35|3 IR sensors;Jumper cables;Mounting screws
+LT|5-Channel Line Tracer Array|Precise line position sensing|320|28|5-channel IR array;Pin header cable;Mounting bracket
+LT|8-Channel Line Tracer Array|Competition-grade line array|520|18|8-channel IR array;Cable;Calibration guide
+LT|QTR-8A Analog Reflectance Array|Analog sensor array|690|10|QTR-8A board;Header pins;Mounting hardware
+LT|Digital Line Follower Sensor|Single TCRT5000 sensor|55|80|TCRT5000 module;3-pin cable
+LT|Line Tracer Robot Kit (2WD)|Build-your-own line follower|1250|14|2WD chassis;2 motors;3-channel sensor;L298N driver;Arduino Nano;Battery holder;Guide
+LT|Line Tracer Robot Kit (PID)|PID-ready line follower|1890|9|5-channel array;TB6612 driver;Arduino Nano;N20 motors;Li-ion holder;PID guide
+LT|Line Tracing Practice Mat|Black line track, 1.2m x 2.4m|750|11|Printed vinyl mat;Track layout guide
+LT|Black Electrical Tape (3 rolls)|For custom tracks|90|60|3 rolls 18mm tape
+KIT|Obstacle Avoider Robot Kit|Ultrasonic obstacle avoidance|1350|12|2WD chassis;HC-SR04;Servo mount;Arduino Uno;L298N;Battery holder
+KIT|Bluetooth Car Kit|Phone-controlled robot car|1450|10|4WD chassis;HC-05;Arduino Uno;L298N;Battery pack;App guide
+KIT|Sumo Robot Kit|Mini sumo competition kit|2250|6|Metal blade chassis;2 N20 motors;Edge sensors;Opponent sensors;Controller board
+KIT|Robotic Arm Kit (4-DOF)|Servo robotic arm|1650|8|Acrylic arm parts;4 servos;Servo shield;Screws;Guide
+KIT|Smart Home Learning Kit|Home automation projects|1790|9|Uno board;Relay module;PIR sensor;DHT11;LCD 16x2;Wires;Guide
+KIT|Electronics Basics Kit|Components for first circuits|650|25|Breadboard;LEDs;Resistors;Buttons;Buzzer;Wires;Battery clip
+KIT|Soldering Practice Kit|Learn to solder|350|22|Practice PCB;Component pack;Solder wire;Guide
+KIT|IoT Weather Station Kit|ESP32 weather logger|1950|7|ESP32;BME280;OLED display;Wires;Guide
+KIT|Drone Building Kit|Quadcopter educational kit|4200|4|Frame;4 motors;4 ESCs;Flight controller;Props;Guide
+MCU|Arduino Uno R3|ATmega328P board|650|30|Uno R3 board;USB cable
+MCU|Arduino Nano|Compact ATmega328P board|320|35|Nano board;Header pins
+MCU|Arduino Mega 2560|54 I/O pins|1150|10|Mega 2560;USB cable
+MCU|ESP32 DevKit V1|WiFi and Bluetooth MCU|420|40|ESP32 board;Header pins
+MCU|ESP8266 NodeMCU|WiFi MCU board|290|35|NodeMCU board;Header pins
+MCU|Raspberry Pi Pico|RP2040 microcontroller|290|25|Pico board;Header pins
+MCU|Raspberry Pi 4 (4GB)|Single-board computer|4800|5|Pi 4 board
+MCU|STM32 Blue Pill|ARM Cortex-M3 board|380|20|Blue Pill board;Header pins
+MCU|Arduino Sensor Shield V5|Easy sensor connections|180|25|Sensor shield
+MCU|Arduino Nano Expansion Shield|Screw terminal shield|150|22|Nano shield
+SEN|HC-SR04 Ultrasonic Sensor|Distance sensor 2-400cm|95|60|HC-SR04 sensor;Mounting bracket
+SEN|IR Obstacle Sensor|Infrared proximity|60|70|IR module;3-pin cable
+SEN|DHT11 Temp & Humidity|Basic climate sensor|110|45|DHT11 module;Cable
+SEN|DHT22 Temp & Humidity|Accurate climate sensor|240|25|DHT22 sensor;Cable
+SEN|PIR Motion Sensor|HC-SR501 motion detector|85|40|HC-SR501;Cable
+SEN|MPU6050 Gyro & Accelerometer|6-axis motion sensor|180|30|MPU6050 board;Header pins
+SEN|Soil Moisture Sensor|Capacitive soil probe|95|40|Probe;Cable
+SEN|Gas Sensor MQ-2|Smoke and LPG detection|130|25|MQ-2 module
+SEN|Light Sensor LDR Module|Ambient light sensing|50|60|LDR module;Cable
+SEN|Color Sensor TCS3200|RGB color detection|390|15|TCS3200 board;Cable
+SEN|Rotary Encoder Module|Position and speed sensing|85|35|Encoder module;Knob
+SEN|Hall Effect Sensor|Magnetic field detection|70|40|Hall module;Cable
+SEN|Sound Sensor Module|Microphone detection|65|45|Sound module;Cable
+SEN|Water Level Sensor|Liquid level detection|55|45|Sensor;Cable
+MOT|SG90 Micro Servo|9g hobby servo|120|60|SG90 servo;Horn pack
+MOT|MG996R Servo|High-torque metal gear servo|390|25|MG996R servo;Horn pack
+MOT|TT Gear Motor|3-6V DC motor with gearbox|75|90|TT motor;Wheel adapter
+MOT|N20 Gear Motor|Micro metal gearmotor|230|35|N20 motor;Mounting bracket
+MOT|N20 Motor with Encoder|Closed-loop micro motor|420|15|N20 motor;Encoder;Cable
+MOT|28BYJ-48 Stepper + ULN2003|Stepper motor kit|160|30|Stepper;ULN2003 board
+MOT|NEMA 17 Stepper Motor|Precision stepper|690|12|NEMA 17 motor
+MOT|A4988 Stepper Driver|Stepper motor driver|120|30|A4988 driver;Heat sink
+MOT|TB6612FNG Motor Driver|Efficient dual driver|180|30|TB6612 board;Header pins
+MOT|L293D Motor Shield|Arduino motor shield|250|18|L293D shield
+MOT|PCA9685 Servo Driver|16-channel PWM|290|18|PCA9685 board;Header pins
+MOT|Brushless Motor + ESC Set|For drones and fans|750|10|BLDC motor;30A ESC
+PLT|2WD Robot Chassis|Acrylic base with 2 motors|520|18|Chassis;2 TT motors;Wheels;Caster
+PLT|4WD Robot Chassis|Four-motor platform|890|12|Chassis;4 motors;4 wheels;Hardware
+PLT|Tracked Tank Chassis|Crawler tracks platform|1450|6|Tank base;2 motors;Tracks
+PLT|Mecanum Wheel Chassis|Omnidirectional platform|2650|5|Chassis;4 mecanum wheels;4 motors
+PLT|Mini Sumo Chassis|10cm competition base|480|10|Steel plate;2 N20 mounts
+PLT|Robotic Arm Frame|Acrylic 4-DOF arm|780|9|Arm parts;Hardware
+PLT|Caster Ball Wheel|Front support wheel|40|60|Ball caster;Screws
+PLT|Rubber Wheel Pair (65mm)|Wheels for TT motors|90|50|2 wheels
+PWR|18650 Li-ion Cell|3.7V rechargeable|180|50|1 cell
+PWR|18650 Dual Holder|Battery case for 2 cells|55|45|Dual holder;Wires
+PWR|TP4056 Charger Module|Li-ion USB charger|45|60|TP4056 module
+PWR|LM2596 Buck Converter|Adjustable step-down|85|40|LM2596 module
+PWR|XL6009 Boost Converter|Adjustable step-up|95|35|XL6009 module
+PWR|4xAA Battery Holder|With on/off switch|45|50|Holder;Switch;Leads
+PWR|9V Battery Clip Set|Clip with barrel jack|35|60|Clip;DC jack lead
+PWR|7.4V LiPo Battery 1500mAh|2S LiPo for robots|650|14|LiPo battery;XT60 plug
+CMP|Breadboard 830 Points|Solderless prototyping|130|45|Breadboard
+CMP|Jumper Wire Set (120pcs)|M-M, M-F, F-F wires|140|55|120 wires
+CMP|LED Assortment (100pcs)|5mm mixed colors|90|45|100 LEDs
+CMP|Resistor Kit (600pcs)|30 values assortment|220|30|600 resistors
+CMP|Capacitor Kit|Ceramic and electrolytic|240|22|Assorted capacitors
+CMP|Push Button Pack (20pcs)|Tactile switches|70|50|20 buttons
+CMP|Relay Module 2-Channel|5V relay board|130|30|Relay board
+CMP|Potentiometer Set (10pcs)|10kΩ rotary pots|110|35|10 pots
+CMP|Active Buzzer Module|5V buzzer|40|60|Buzzer module
+CMP|Transistor & Diode Kit|Common components|190|25|Transistors;Diodes
+DSP|LCD 16x2 with I2C|Character display|180|35|LCD;I2C backpack
+DSP|0.96" OLED Display|I2C 128x64 display|190|40|OLED;Cable
+DSP|LCD 20x4 with I2C|Large character display|290|20|LCD;I2C backpack
+DSP|TFT 2.4" Touch Shield|Color touch display|520|12|TFT shield
+DSP|7-Segment 4-Digit Display|TM1637 module|85|35|Display;Cable
+DSP|8x8 LED Matrix MAX7219|Scrolling display|130|30|Matrix;Cable
+WLS|HC-05 Bluetooth Module|Serial Bluetooth|180|35|HC-05 board
+WLS|HM-10 BLE Module|Bluetooth 4.0 LE|290|20|HM-10 board
+WLS|NRF24L01 Radio Pair|2.4GHz transceivers|210|25|2 modules
+WLS|IR Remote & Receiver|Infrared control set|90|40|Remote;Receiver
+WLS|RFID RC522 Kit|Reader with cards|180|28|Reader;Card;Key tag
+WLS|ESP32-CAM Module|WiFi camera board|520|15|ESP32-CAM;FTDI adapter
+TLS|Digital Multimeter|Basic DMM|450|15|Multimeter;Probes
+TLS|Soldering Iron 60W|Adjustable temperature|650|10|Iron;Stand
+TLS|Solder Wire 0.8mm|50g roll|120|35|Solder roll
+TLS|Wire Stripper|Cutter and stripper|220|20|Stripper tool
+TLS|Mini Screwdriver Set|Precision set|180|25|Screwdriver bits;Handle
+TLS|USB Logic Analyzer|8-channel 24MHz|390|10|Analyzer;Probe leads
+BK|Arduino Projects Handbook|25 beginner projects|350|25|Printed book
+BK|Robot Building Guide|Chassis to autonomy|420|20|Printed book
+BK|Line Follower Handbook|Sensors, PID and tuning|380|18|Printed book
+BK|ESP32 IoT Cookbook|Wireless project recipes|390|15|Printed book
+BK|C++ for Makers|Programming for Arduino|320|22|Printed book`;
+const SEED=RAW.split("\n").map((l,i)=>{const p=l.split("|");return{id:i+1,cat:p[0],name:p[1],desc:p[2],price:+p[3],stock:+p[4],inc:p[5].split(";")}});
+const PAGES={pos:["Point of sale","Add products and complete a simulated sale.","▦"],inventory:["Inventory","Check stock levels and restock items.","▤"],transactions:["Transactions","Review sales and daily totals.","◷"],receipts:["Receipts","Find, reprint or scan receipts.","▧"],settings:["Settings","Manage demo data and backups.","⚙"]};
+let S=load(),cat="ALL",curR=null,stream=null,scanTimer=null;
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.products&&s.products.length>=SEED.length)return s}catch(e){}return{products:JSON.parse(JSON.stringify(SEED)),receipts:[],cart:{}}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const $=id=>document.getElementById(id);
+const money=n=>"₱"+Number(n).toLocaleString("en-PH",{minimumFractionDigits:2,maximumFractionDigits:2});
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const prod=id=>S.products.find(p=>p.id===id);
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),1800)}
+function openModal(id){$(id).classList.add("open")}
+function closeModal(id){$(id).classList.remove("open");if(id==="scanModal")stopScan()}
+document.querySelectorAll(".mb").forEach(m=>m.addEventListener("click",e=>{if(e.target===m)closeModal(m.id)}));
+document.addEventListener("keydown",e=>{if(e.key==="Escape")document.querySelectorAll(".mb.open").forEach(m=>closeModal(m.id));if(e.key==="/"&&!/INPUT|SELECT/.test(document.activeElement.tagName)){e.preventDefault();go("pos");$("q").focus()}});
+
+/* navigation */
+$("nav").innerHTML=Object.entries(PAGES).map(([k,v])=>`<button class="nav-item" data-p="${k}"><span>${v[2]}</span>${v[0]}</button>`).join("");
+$("bnav").innerHTML=Object.entries(PAGES).filter(([k])=>k!=="settings").map(([k,v])=>`<button data-p="${k}"><span>${v[2]}</span>${v[0].split(" ")[0]}</button>`).join("")+`<button data-p="settings"><span>⚙</span>Settings</button>`;
+document.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>go(b.dataset.p));
+function go(p){document.querySelectorAll(".page").forEach(x=>x.classList.toggle("active",x.id==="page-"+p));document.querySelectorAll("[data-p]").forEach(b=>b.classList.toggle("active",b.dataset.p===p));$("pageTitle").textContent=PAGES[p][0];$("pageSub").textContent=PAGES[p][1];toggleCart(false);$("fab").style.display=p==="pos"?"":"none";({pos:renderProducts,inventory:renderInventory,transactions:renderTx,receipts:renderReceipts})[p]?.()}
+
+/* catalog */
+function renderChips(){const n={};S.products.forEach(p=>n[p.cat]=(n[p.cat]||0)+1);$("chips").innerHTML=`<button class="chip ${cat==="ALL"?"on":""}" data-c="ALL">All (${S.products.length})</button>`+Object.entries(CATS).map(([k,v])=>`<button class="chip ${cat===k?"on":""}" data-c="${k}">${v[0]} (${n[k]||0})</button>`).join("");$("chips").querySelectorAll(".chip").forEach(b=>b.onclick=()=>{cat=b.dataset.c;renderChips();renderProducts()})}
+function renderProducts(){
+ const q=$("q").value.trim().toLowerCase(),so=$("sort").value;
+ let l=S.products.filter(p=>(cat==="ALL"||p.cat===cat)&&(!q||(p.name+p.desc+CATS[p.cat][0]).toLowerCase().includes(q)));
+ l.sort((a,b)=>so==="pa"?a.price-b.price:so==="pd"?b.price-a.price:so==="stock"?b.stock-a.stock:a.name.localeCompare(b.name));
+ $("pcount").textContent=l.length+" product"+(l.length===1?"":"s");
+ $("products").innerHTML=l.length?l.map(p=>`<div class="product ${p.stock<1?"out":""}" tabindex="0" onclick="showInc(${p.id})" onkeydown="if(event.key==='Enter')showInc(${p.id})">
+  ${p.stock<1?'<span class="badge out">Sold out</span>':p.stock<=5?`<span class="badge">${p.stock} left</span>`:""}
+  <div class="art">${CATS[p.cat][1]}</div><div class="pcat">${CATS[p.cat][0]}</div><div class="pname">${esc(p.name)}</div><div class="pdesc">${esc(p.desc)}</div>
+  <div class="pbot"><span class="price">${money(p.price)}</span><button class="primary-btn" ${p.stock<1?"disabled":""} onclick="event.stopPropagation();add(${p.id})">Add</button></div></div>`).join(""):`<div class="empty" style="grid-column:1/-1">No products match your search. Try another word or choose All.</div>`;
+ renderCart()}
+function showInc(id){const p=prod(id);$("incTitle").textContent=p.name;$("incBody").innerHTML=`<div class="inc-head"><span style="color:var(--muted);font-size:13px">${CATS[p.cat][0]} · ${p.stock} in stock</span><strong>${money(p.price)}</strong></div><p style="font-size:13px;margin-bottom:8px">What's included</p><ul class="inc">${p.inc.map(i=>`<li>${esc(i)}</li>`).join("")}</ul>`;const b=$("incAdd");b.disabled=p.stock<1;b.textContent=p.stock<1?"Sold out":"Add to order";b.onclick=()=>{add(id);closeModal("incModal")};openModal("incModal")}
+
+/* cart */
+function add(id,n=1){const p=prod(id),c=S.cart[id]||0;if(c+n>p.stock){toast("Only "+p.stock+" in stock");return}S.cart[id]=c+n;if(S.cart[id]<1)delete S.cart[id];save();renderCart();if(n>0)toast("Added "+p.name)}
+function rmItem(id){delete S.cart[id];save();renderCart()}
+function clearCart(){S.cart={};save();renderCart()}
+function cartList(){return Object.entries(S.cart).map(([id,q])=>({p:prod(+id),q})).filter(x=>x.p)}
+function cartTotal(){return cartList().reduce((s,x)=>s+x.p.price*x.q,0)}
+function renderCart(){const l=cartList(),n=l.reduce((s,x)=>s+x.q,0),t=cartTotal();
+ $("ic").textContent="· "+n+" item"+(n===1?"":"s");
+ $("cartItems").innerHTML=l.length?l.map(({p,q})=>`<div class="ci"><div><strong>${esc(p.name)}</strong><div class="qty"><button onclick="add(${p.id},-1)" aria-label="Decrease">−</button><span>${q}</span><button onclick="add(${p.id},1)" aria-label="Increase">+</button></div></div><div class="ci-r">${money(p.price*q)}<br><button class="rm" onclick="rmItem(${p.id})">Remove</button></div></div>`).join(""):`<div class="empty">Your order is empty.<br>Tap a product to add it.</div>`;
+ $("subtotal").textContent=$("total").textContent=money(t);$("coBtn").disabled=!l.length;$("fabTxt").textContent=n?`${n} item${n>1?"s":""} · ${money(t)}`:"View order"}
+function toggleCart(o){$("cart").classList.toggle("open",o)}
+
+/* checkout */
+function openCheckout(){const l=cartList();if(!l.length)return;const t=cartTotal();
+ $("coSum").innerHTML=l.map(({p,q})=>`<div><span>${q} × ${esc(p.name)}</span><span>${money(p.price*q)}</span></div>`).join("")+`<div><span>Total</span><span>${money(t)}</span></div>`;
+ $("cust").value="";$("pm").value="Cash";$("cash").value="";
+ $("quick").innerHTML=[["Exact",t],...[500,1000,2000,5000].filter(v=>v>t).slice(0,3).map(v=>[money(v).replace(".00",""),v])].map(([a,v])=>`<button type="button" onclick="$('cash').value=${v};updChange()">${a}</button>`).join("");
+ payUI();toggleCart(false);openModal("checkoutModal")}
+function payUI(){$("cashField").style.display=$("pm").value==="Cash"?"":"none";updChange()}
+function updChange(){const t=cartTotal(),cash=$("pm").value==="Cash",v=+$("cash").value||0,d=$("chg");
+ if(!cash){d.className="change";d.textContent="Mock payment. No change due.";return}
+ const c=v-t;d.className="change"+(c<0?" bad":"");d.textContent=c<0?(v?"Short by "+money(-c):"Enter the cash received"):"Change: "+money(c)}
+function completeSale(){const l=cartList();if(!l.length)return;const t=cartTotal(),m=$("pm").value,cash=m==="Cash",v=cash?+$("cash").value||0:t;
+ if(cash&&v<t){toast("Cash received is less than the total");$("cash").focus();return}
+ for(const {p,q} of l)if(q>p.stock){toast(p.name+" is low on stock");return}
+ const d=new Date(),seq=String(S.receipts.length+1).padStart(4,"0"),id=`RL-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}-${seq}`;
+ const r={id,date:d.toISOString(),customer:$("cust").value.trim()||"Walk-in customer",method:m,items:l.map(({p,q})=>({id:p.id,name:p.name,quantity:q,price:p.price,lineTotal:p.price*q})),subtotal:t,total:t,cashReceived:v,change:v-t,simulation:true};
+ l.forEach(({p,q})=>p.stock-=q);S.receipts.unshift(r);S.cart={};save();closeModal("checkoutModal");renderProducts();showReceipt(r);toast("Sale completed")}
+
+/* receipts */
+function encode(r){return btoa(unescape(encodeURIComponent(JSON.stringify({i:r.id,d:r.date,c:r.customer,m:r.method,t:r.items.map(x=>[x.name,x.quantity,x.price]),r:r.cashReceived}))))}
+function decode(s){const o=JSON.parse(decodeURIComponent(escape(atob(s.trim()))));const items=o.t.map(x=>({name:x[0],quantity:x[1],price:x[2],lineTotal:x[1]*x[2]})),tot=items.reduce((a,x)=>a+x.lineTotal,0);return{id:o.i,date:o.d,customer:o.c,method:o.m,items,subtotal:tot,total:tot,cashReceived:o.r,change:o.r-tot,simulation:true}}
+function showReceipt(r){curR=r;const d=new Date(r.date).toLocaleString("en-PH");
+ $("rcBody").innerHTML=`<div class="receipt-paper"><div class="rc"><div class="rbrand">ROBOLEARN</div><div class="rs">Robotics Solutions<br>${esc(r.id)}<br>${d}</div></div><div class="rule"></div><div class="rs">Customer: ${esc(r.customer)}<br>Payment: ${esc(r.method)}</div><div class="rule"></div>${r.items.map(x=>`<div class="rl"><span>${x.quantity} × ${esc(x.name)}</span><span>${money(x.lineTotal)}</span></div>`).join("")}<div class="rule"></div><div class="rl rt"><span>TOTAL</span><span>${money(r.total)}</span></div><div class="rl"><span>Paid</span><span>${money(r.cashReceived)}</span></div><div class="rl"><span>Change</span><span>${money(r.change)}</span></div><div class="rw">SIMULATED RECEIPT. NOT VALID FOR REAL TRANSACTIONS.</div><div class="qr" id="qrBox"></div><div class="rc rs">Scan to rebuild this receipt</div></div>`;
+ openModal("receiptModal");
+ try{new QRCode($("qrBox"),{text:encode(r),width:150,height:150,correctLevel:QRCode.CorrectLevel.L})}catch(e){$("qrBox").innerHTML='<div class="qr-err">This order is too large for one QR code. Use Download JSON instead.</div>'}}
+function lines(r){return[`ROBOLEARN POS (SIMULATION)`,r.id,new Date(r.date).toLocaleString("en-PH"),`Customer: ${r.customer}`,`Payment: ${r.method}`,"------------------------",...r.items.map(x=>`${x.quantity} x ${x.name}  ${money(x.lineTotal)}`),"------------------------",`TOTAL: ${money(r.total)}`,`Paid: ${money(r.cashReceived)}`,`Change: ${money(r.change)}`,"SIMULATED. NOT A REAL RECEIPT."].join("\n")}
+function dl(name,text,type){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
+function dlTxt(){dl(curR.id+".txt",lines(curR),"text/plain")}
+function dlJson(){dl(curR.id+".json",JSON.stringify(curR,null,2),"application/json")}
+function viewR(id){showReceipt(S.receipts.find(r=>r.id===id))}
+function rcCard(r){return`<div class="card"><div><strong>${esc(r.id)}</strong><p>${esc(r.customer)} · ${esc(r.method)} · ${r.items.reduce((s,x)=>s+x.quantity,0)} items · ${new Date(r.date).toLocaleString("en-PH")}</p></div><div class="actions"><strong style="align-self:center">${money(r.total)}</strong><button class="secondary-btn" onclick="viewR('${r.id}')">View receipt</button></div></div>`}
+function renderReceipts(){const q=$("rq").value.trim().toLowerCase(),l=S.receipts.filter(r=>!q||(r.id+r.customer).toLowerCase().includes(q));$("rcList").innerHTML=l.length?l.map(rcCard).join(""):`<div class="empty">${S.receipts.length?"No receipts match your search.":"No receipts yet. Complete a sale to create one."}</div>`}
+function renderTx(){const today=new Date().toDateString(),td=S.receipts.filter(r=>new Date(r.date).toDateString()===today),rev=a=>a.reduce((s,r)=>s+r.total,0);
+ $("stats").innerHTML=`<div class="stat"><p>Sales today</p><strong>${money(rev(td))}</strong></div><div class="stat"><p>Orders today</p><strong>${td.length}</strong></div><div class="stat"><p>All-time sales</p><strong>${money(rev(S.receipts))}</strong></div>`;
+ $("tc").textContent=S.receipts.length+" records";$("txList").innerHTML=S.receipts.length?S.receipts.map(rcCard).join(""):`<div class="empty">No transactions yet. Complete a sale on the Point of sale page.</div>`}
+
+/* inventory */
+function renderInventory(){const sel=$("ic2");if(!sel.options.length)sel.innerHTML=`<option value="ALL">All categories</option>`+Object.entries(CATS).map(([k,v])=>`<option value="${k}">${v[0]}</option>`).join("");
+ const q=$("iq").value.trim().toLowerCase(),c=sel.value;
+ const l=S.products.filter(p=>(c==="ALL"||p.cat===c)&&(!q||p.name.toLowerCase().includes(q)));
+ $("invList").innerHTML=l.map(p=>`<div class="card"><div><strong>${esc(p.name)}</strong><p>${CATS[p.cat][0]} · ${money(p.price)}</p></div><div class="actions"><span class="tag ${p.stock<1?"out":p.stock<=5?"low":""}" style="align-self:center">${p.stock<1?"Sold out":p.stock+" in stock"}</span><button class="secondary-btn" onclick="restock(${p.id})">Restock +10</button></div></div>`).join("")||`<div class="empty">No products found.</div>`}
+function restock(id){prod(id).stock+=10;save();renderInventory();toast("Added 10 units")}
+
+/* scanner */
+function openScanner(){$("scanStatus").textContent="Start the camera and point it at a RoboLearn receipt QR code.";openModal("scanModal")}
+async function startScan(){const st=$("scanStatus");try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});const v=$("vid");v.srcObject=stream;await v.play();st.textContent="Scanning…";const det="BarcodeDetector"in window?new BarcodeDetector({formats:["qr_code"]}):null,cv=document.createElement("canvas"),cx=cv.getContext("2d",{willReadFrequently:true});
+ scanTimer=setInterval(async()=>{if(!v.videoWidth)return;let txt=null;try{if(det){const r=await det.detect(v);txt=r[0]?.rawValue}else if(window.jsQR){cv.width=v.videoWidth;cv.height=v.videoHeight;cx.drawImage(v,0,0);const im=cx.getImageData(0,0,cv.width,cv.height);txt=jsQR(im.data,cv.width,cv.height)?.data}}catch(e){}
+  if(txt){try{const r=decode(txt);closeModal("scanModal");showReceipt(r);toast("Receipt rebuilt")}catch(e){st.textContent="That QR code is not a RoboLearn receipt. Keep scanning or paste the data."}}},400)}catch(e){st.textContent="Camera unavailable. Allow camera access, or paste the receipt data below."}}
+function stopScan(){clearInterval(scanTimer);if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}}
+function manualDecode(){try{const r=decode($("manual").value);closeModal("scanModal");showReceipt(r)}catch(e){$("scanStatus").textContent="Could not read that data. Check that you pasted the full code."}}
+
+/* settings */
+function exportBackup(){dl("robolearn-backup.json",JSON.stringify(S,null,2),"application/json")}
+function resetData(){if(confirm("Reset all products, stock, orders and receipts to the demo defaults?")){localStorage.removeItem(KEY);S=load();renderChips();go("pos");toast("Demo data reset")}}
+
+renderChips();go("pos");
 </script>
-
 </body>
 </html>
